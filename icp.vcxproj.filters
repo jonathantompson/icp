@@ -1,0 +1,287 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\icp">
+      <UniqueIdentifier>{6e5f287a-1954-4a86-bb13-aa43fdc86d09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\string_util">
+      <UniqueIdentifier>{6023a388-b081-4529-8d4d-64707ea0df1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\threading">
+      <UniqueIdentifier>{1c6bcab9-9945-43eb-a8ab-09b91aa8a611}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\alignment">
+      <UniqueIdentifier>{345159e0-40c9-43ba-87ef-4616f08c6cba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\data_str">
+      <UniqueIdentifier>{ee82d90a-c161-4374-af52-32e5e7769b02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\debug_util">
+      <UniqueIdentifier>{a5915174-8b8c-47da-9488-f21b79363ebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\exceptions">
+      <UniqueIdentifier>{a5c65246-073c-4efb-9d89-908618bd0221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\math">
+      <UniqueIdentifier>{99bf5932-564a-4583-8516-0816befbccde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\test_unit">
+      <UniqueIdentifier>{7a3b8362-f462-478f-97ff-1c2b90a522da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\icp">
+      <UniqueIdentifier>{693f1d01-679b-4f5b-9270-943fffb65f09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\string_util">
+      <UniqueIdentifier>{a697ebd9-7716-4533-8323-88cb65c2e300}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\data_str">
+      <UniqueIdentifier>{36b4206c-c467-4c79-9463-2447c05dc892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\debug_util">
+      <UniqueIdentifier>{9d860d74-44dd-4881-8e88-19bf330d626d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\exceptions">
+      <UniqueIdentifier>{a31a93b0-d7b5-4b5b-a421-eee0e1a3718d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\math">
+      <UniqueIdentifier>{0759f2c4-0a8a-4a12-9d81-cefaa5b07c74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\test_unit">
+      <UniqueIdentifier>{dd1169d0-3f8b-4cf5-b8b3-516ffccc384c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\clk">
+      <UniqueIdentifier>{48a871c4-5b38-4ec2-b9d4-68c8517d34fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\threading">
+      <UniqueIdentifier>{fc64a51f-a33b-4411-b0db-aaa5e3a273d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\icp\file_io">
+      <UniqueIdentifier>{37a01efb-2a34-41f8-9afc-63193a846ac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\icp\file_io">
+      <UniqueIdentifier>{44d16806-5283-43cd-af7c-46e944012e6d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\icp\alignment\data_align.h">
+      <Filter>Header Files\icp\alignment</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\min_heap.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\pair.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\triple.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\vector.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\vector_managed.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\circular_buffer.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\hash_funcs.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\hash_map.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\hash_map_managed.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\data_str\hash_set.h">
+      <Filter>Header Files\icp\data_str</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\debug_util\debug_util.h">
+      <Filter>Header Files\icp\debug_util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\exceptions\wruntime_error.h">
+      <Filter>Header Files\icp\exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\vec2.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\vec3.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\vec4.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\decompose.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\mat2x2.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\mat3x3.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\mat4x4.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\math_base.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\math_types.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\noise.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\perlin_noise.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\plane.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\quat.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\string_util\win32_debug_buffer.h">
+      <Filter>Header Files\icp\string_util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\string_util\macros.h">
+      <Filter>Header Files\icp\string_util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\string_util\md5.h">
+      <Filter>Header Files\icp\string_util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\string_util\string_util.h">
+      <Filter>Header Files\icp\string_util</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\callback_queue.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\callback_queue_item.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\thread.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\thread_pool.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\callback.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\threading\callback_instances.h">
+      <Filter>Header Files\icp\threading</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\icp.h">
+      <Filter>Header Files\icp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\pso.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\bfgs.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\common_optimization.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\pso_parallel.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\lm_fit.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\test_unit\test_unit.h">
+      <Filter>Header Files\test_unit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\test_unit\test_util.h">
+      <Filter>Header Files\test_unit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\test_unit\log_message.h">
+      <Filter>Header Files\test_unit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\test_unit\log_writer.h">
+      <Filter>Header Files\test_unit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\test_unit\param_map.h">
+      <Filter>Header Files\test_unit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\clk\clk.h">
+      <Filter>Header Files\icp\clk</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\icp_eigen_data.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\math\icp.h">
+      <Filter>Header Files\icp\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\file_io\file_io.h">
+      <Filter>Header Files\icp\file_io</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\icp\data_str\hash_funcs.cpp">
+      <Filter>Source Files\icp\data_str</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\debug_util\debug_util_win32.cpp">
+      <Filter>Source Files\icp\debug_util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\debug_util\debug_util_macosx.cpp">
+      <Filter>Source Files\icp\debug_util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\exceptions\wruntime_error.cpp">
+      <Filter>Source Files\icp\exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\math_base.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\decompose.c">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\string_util\string_util.cpp">
+      <Filter>Source Files\icp\string_util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\string_util\md5c.c">
+      <Filter>Source Files\icp\string_util</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\pso.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\common_optimization.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\pso_parallel.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_unit\param_map.cpp">
+      <Filter>Source Files\test_unit</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_unit\log_message.cpp">
+      <Filter>Source Files\test_unit</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_unit\log_writer.cpp">
+      <Filter>Source Files\test_unit</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\threading\thread_pool.cpp">
+      <Filter>Source Files\icp\threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\threading\thread.cpp">
+      <Filter>Source Files\icp\threading</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\icp_eigen_data.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\icp.cpp">
+      <Filter>Source Files\icp\math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\file_io\file_io.cpp">
+      <Filter>Source Files\icp\file_io</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

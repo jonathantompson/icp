@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B6B147F5-C7F9-4E94-A58C-1B4855967A48}</ProjectGuid>
+    <RootNamespace>icp</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)\build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)\build_intermediate\$(Platform)\$(Configuration)\</IntDir>
+    <TargetExt>.lib</TargetExt>
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(ProjectDir)\build_intermediate\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)\build\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>BREAK_ON_EXCEPTION_INT;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ProgramDataBaseFileName>$(TargetDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>Comctl32.lib;</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(ProjectDir)include</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>BREAK_ON_EXCEPTION_INT;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <ProgramDataBaseFileName>$(TargetDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>Comctl32.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\icp\alignment\data_align.h" />
+    <ClInclude Include="include\icp\clk\clk.h" />
+    <ClInclude Include="include\icp\data_str\circular_buffer.h" />
+    <ClInclude Include="include\icp\data_str\hash_funcs.h" />
+    <ClInclude Include="include\icp\data_str\hash_map.h" />
+    <ClInclude Include="include\icp\data_str\hash_map_managed.h" />
+    <ClInclude Include="include\icp\data_str\hash_set.h" />
+    <ClInclude Include="include\icp\data_str\min_heap.h" />
+    <ClInclude Include="include\icp\data_str\pair.h" />
+    <ClInclude Include="include\icp\data_str\triple.h" />
+    <ClInclude Include="include\icp\data_str\vector.h" />
+    <ClInclude Include="include\icp\data_str\vector_managed.h" />
+    <ClInclude Include="include\icp\debug_util\debug_util.h" />
+    <ClInclude Include="include\icp\exceptions\wruntime_error.h" />
+    <ClInclude Include="include\icp\file_io\file_io.h" />
+    <ClInclude Include="include\icp\icp.h" />
+    <ClInclude Include="include\icp\math\bfgs.h" />
+    <ClInclude Include="include\icp\math\common_optimization.h" />
+    <ClInclude Include="include\icp\math\decompose.h" />
+    <ClInclude Include="include\icp\math\icp.h" />
+    <ClInclude Include="include\icp\math\icp_eigen_data.h" />
+    <ClInclude Include="include\icp\math\lm_fit.h" />
+    <ClInclude Include="include\icp\math\pso_parallel.h" />
+    <ClInclude Include="include\icp\math\mat2x2.h" />
+    <ClInclude Include="include\icp\math\mat3x3.h" />
+    <ClInclude Include="include\icp\math\mat4x4.h" />
+    <ClInclude Include="include\icp\math\math_base.h" />
+    <ClInclude Include="include\icp\math\math_types.h" />
+    <ClInclude Include="include\icp\math\noise.h" />
+    <ClInclude Include="include\icp\math\perlin_noise.h" />
+    <ClInclude Include="include\icp\math\plane.h" />
+    <ClInclude Include="include\icp\math\pso.h" />
+    <ClInclude Include="include\icp\math\quat.h" />
+    <ClInclude Include="include\icp\math\vec2.h" />
+    <ClInclude Include="include\icp\math\vec3.h" />
+    <ClInclude Include="include\icp\math\vec4.h" />
+    <ClInclude Include="include\icp\string_util\macros.h" />
+    <ClInclude Include="include\icp\string_util\md5.h" />
+    <ClInclude Include="include\icp\string_util\string_util.h" />
+    <ClInclude Include="include\icp\string_util\win32_debug_buffer.h" />
+    <ClInclude Include="include\icp\threading\callback.h" />
+    <ClInclude Include="include\icp\threading\callback_instances.h" />
+    <ClInclude Include="include\icp\threading\callback_queue.h" />
+    <ClInclude Include="include\icp\threading\callback_queue_item.h" />
+    <ClInclude Include="include\icp\threading\thread.h" />
+    <ClInclude Include="include\icp\threading\thread_pool.h" />
+    <ClInclude Include="include\test_unit\log_message.h" />
+    <ClInclude Include="include\test_unit\log_writer.h" />
+    <ClInclude Include="include\test_unit\param_map.h" />
+    <ClInclude Include="include\test_unit\test_unit.h" />
+    <ClInclude Include="include\test_unit\test_util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\icp\data_str\hash_funcs.cpp" />
+    <ClCompile Include="src\icp\debug_util\debug_util_macosx.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\icp\debug_util\debug_util_win32.cpp" />
+    <ClCompile Include="src\icp\exceptions\wruntime_error.cpp" />
+    <ClCompile Include="src\icp\file_io\file_io.cpp" />
+    <ClCompile Include="src\icp\math\common_optimization.cpp" />
+    <ClCompile Include="src\icp\math\decompose.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\icp.cpp" />
+    <ClCompile Include="src\icp\math\icp_eigen_data.cpp" />
+    <ClCompile Include="src\icp\math\pso_parallel.cpp" />
+    <ClCompile Include="src\icp\math\math_base.cpp" />
+    <ClCompile Include="src\icp\math\pso.cpp" />
+    <ClCompile Include="src\icp\string_util\md5c.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="src\icp\string_util\string_util.cpp" />
+    <ClCompile Include="src\icp\threading\thread.cpp" />
+    <ClCompile Include="src\icp\threading\thread_pool.cpp" />
+    <ClCompile Include="src\test_unit\log_message.cpp" />
+    <ClCompile Include="src\test_unit\log_writer.cpp" />
+    <ClCompile Include="src\test_unit\param_map.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

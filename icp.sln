@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icp", "icp.vcxproj", "{B6B147F5-C7F9-4E94-A58C-1B4855967A48}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcxproj", "{0DCE4828-C84A-473F-8F4F-81F638B88BEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6B147F5-C7F9-4E94-A58C-1B4855967A48} = {B6B147F5-C7F9-4E94-A58C-1B4855967A48}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6B147F5-C7F9-4E94-A58C-1B4855967A48}.Debug|x64.ActiveCfg = Debug|x64
+		{B6B147F5-C7F9-4E94-A58C-1B4855967A48}.Debug|x64.Build.0 = Debug|x64
+		{B6B147F5-C7F9-4E94-A58C-1B4855967A48}.Release|x64.ActiveCfg = Release|x64
+		{B6B147F5-C7F9-4E94-A58C-1B4855967A48}.Release|x64.Build.0 = Release|x64
+		{0DCE4828-C84A-473F-8F4F-81F638B88BEB}.Debug|x64.ActiveCfg = Debug|x64
+		{0DCE4828-C84A-473F-8F4F-81F638B88BEB}.Debug|x64.Build.0 = Debug|x64
+		{0DCE4828-C84A-473F-8F4F-81F638B88BEB}.Release|x64.ActiveCfg = Release|x64
+		{0DCE4828-C84A-473F-8F4F-81F638B88BEB}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

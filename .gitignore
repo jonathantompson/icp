@@ -1,0 +1,11 @@
+build
+CMakeLists.txt.user
+build_intermediate
+*~
+.DS_Store
+*.sdf
+ipch
+*.opensdf
+build
+*.asv
+ik.v11.suo

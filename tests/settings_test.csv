@@ -1,0 +1,108 @@
+//, Settings File to load global settings
+//, tabs and spaces will be parsed out unless quotations are used ("")
+
+//, *********** TYPE FORMATS ***********
+//, Name,         Type,           Value
+//, Type: string, int, bool, Float3 or Float4
+//, Value: bool must be 0 or 1
+
+//, *********** SETTINGS ***********
+//, RENDERER
+pureDevice,                       bool,     0
+drawOBBTree,                      bool,     0
+drawConvexHull,                   bool,     0
+drawModels,                       bool,     1
+drawSky,                          bool,     1
+shadowsOn,                        bool,     1
+SMSize,                           int,      1024
+SMRenderPreview,                  bool,     1
+SMFilter,                         bool,     1
+SMCascadeCount,                   int,      2
+SMCascadeSplitLogFactor,          float,    0.5
+SMMipLevels,                      int,      1
+SMSoftness,                       float,    0.09
+SMBlur,                           bool,     1
+SMLightBleedingReduction,         float,    0.6
+SMMinVariance,                    float,    0.0001
+SMDepthEpsilon,                   float,    0.001	
+SMVisualiseSplits,                int,      0
+SMBlendZone,                      float,    0.1
+textureFiltering,                 bool,     1
+textureMipLevels,                 int,      10
+SSAOSampleRadius,                 float,    0.6
+SSAOBias,                         float,    0.3
+SSAOIntensity,                    float,    2.0
+SSAOScale,                        float,    0.5
+SSAOEnable,                       int,      1
+SSAONumberSamples,                int,      4
+RenderGBufferPreviews,            bool,     1
+RenderGBufferPreviewFullScreen,   int,      0
+GlobalAmbient,                    float,    0.25
+renderLightObjects,               bool,     1
+renderLightVolumes,               bool,     1		
+renderLightVolumesWireframe,      bool,     0
+clearGBufferInShader,             bool,     1
+renderObjectsWireframe,           bool,     0
+HDREnable,                        bool,     1
+HDRLuminanceFTau,                 float,    0.98
+HDRToneMapMiddleGrey,             float,    0.25
+HDRToneMapWhiteSq,                float,    2.0
+HDRBloomThreshold,                float,    0.6
+HDRBloomBlurRadius,               int,      6
+HDRBloomBlurSigma,                float,    2.5
+HDRBloomMultiplier,               float,    0.3
+HDRBloomEnable,                   bool,     1
+MotionBlurEnable,                 bool,     1
+MotionBlurNumSamples,             int,      13
+DOFEnable,                        bool,     1
+DOFBounds,                        Float4,   0.15, 0.25, 3.0, 5.0
+HDRDisplayLumianceValue,          bool,     1
+HDRManualLuminanceEnable,         bool,     0
+HDRManualLuminance,               float,    0.1
+
+//, CAMERA
+//, Note camera near and far view planes are just Min and Max.  
+//, Frustum will be fitted to world objects and light volumes at runtime.
+field_of_view,                    float,    60
+view_plane_near,                  float,    1.0
+view_plane_far,                   float,    999.0
+starting_eye_rot,                 FloatQuat,0.0, 0.0, 0.0, 1.0
+starting_eye_pos,                 Float3,   0.0, 0.0, 20.0
+cameraSpeed,                      float,    5.0
+cameraSpeedFast,                  float,    30.0
+
+//, PHYSICS
+pausePhysics,                     bool,     1
+collisionVectorSize,              int,      1024
+startingGravity,                  Float3,   0.0, -9.8, 0.0
+rotateLight,                      bool,     1
+
+//, PHYSICS - OBB RELATED
+pauseOnOBBLeafCollision,          bool,     1
+renderOBBLeafCollisionTriangles,  bool,     1
+renderOBBLeafCollisionBoxes,      bool,     0
+oneLevelOBBTree,                  bool,     0
+drawOBBAsLines,                   bool,     1
+addVectorPreturb,                 bool,     1
+findConvexHull,                   bool,     1
+noStanHull,                       bool,     0
+noCGAL,                           bool,     1	 
+forceNoOBB,                       bool,     0 
+
+//, MAIN LOOP - SYSTEM LEVEL
+physicsStep,                      float,    0.008333333768
+maxRenderFrameSkip,               int,      5
+
+//, INPUT (KEYBOARD + MOUSE)
+mouseSmoothing,                   bool,     0
+
+//, APPLICATION LEVEL
+useSSESIMD,                       bool,     1	
+checkByteAlignment,               bool,     0
+printSSEInfo,                     bool,     0
+appName,                          string,   PRenderer2
+appVersionNumber,                 float,    2.0
+dummy_Float2,                     Float2,   0.15, 0.25
+dummy_Int2,                       Int2,     0, 1
+dummy_Int3,                       Int3,     0, 1, 2
+dummy_Int4,                       Int4,     0, 1, 2, 3
