@@ -17,9 +17,9 @@ This formulation is particularly useful when dealing with real-world 3D scans (f
 
 For those who are curious, I use BFGS to solve the following objective function:
 
-![equation](http://www.sciweavers.org/tex2img.php?eq=f%28c%29%20%3D%20%20%5Csum_%7Bi%3D1%7D%5En%20%20%20%5Cleft%5C%7C%20M_c%20x_%7BPC2%2Ci%7D%20-%20x_%7BPC1%2Ci%7D%5Cright%5C%7C%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+![Image of equation](eqn.png)
 
-Where, ![equation](http://www.sciweavers.org/tex2img.php?eq=c&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) is the pose coefficient vector in ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5CRe%5Em&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0), ![equation](http://www.sciweavers.org/tex2img.php?eq=x_%7BPC1%2Ci%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) and ![equation](http://www.sciweavers.org/tex2img.php?eq=x_%7BPC2%2Ci%7D&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) are the ith PC1 and PC2 correspondence pair in ![equation](http://www.sciweavers.org/tex2img.php?eq=%20%5CRe%5E4&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) (homogeneous coordinates) and ![equation](http://www.sciweavers.org/tex2img.php?eq=M_c&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0) is the user defined 4x4 linear transform for the given pose coefficient.
+Where, `c` is the pose coefficient vector in `R^m`, `x_{PC1,i}` and `x_{PC2,i}` are the ith PC1 and PC2 correspondence pair in `R^3` and `M_c` is the user defined 4x3 linear transform for the given pose coefficient.
 
 If you only want to solve for rotation and translation then use methods 1 and 2, however if you know that you need to solve for a global scale as well, then use method 3.  If you need shear and other non-linear components then you can modify the code of method 3.
 
