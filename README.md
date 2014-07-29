@@ -7,14 +7,14 @@
 
 This library implements a few variants of the Iterative Closest Point algorithm for bringing two point clouds (PC1 and PC2 in to correspondence):
 
-0. SVD to find the eigen vectors of the cross-covaraince matrix **(standard technique)**
-1. A custom solution using BFGS **(non-standard technique)**
-2. A custom solution using PSO **(non-standard technique)**
-3. A implementation of Shinji Umeyama's method described in "Least-Squares Estimation of Transformation Parameters Between Two Point Patterns" **(standard technique)**
+1. SVD to find the eigen vectors of the cross-covaraince matrix **(standard technique)**
+2. A custom solution using BFGS **(non-standard technique)**
+3. A custom solution using PSO **(non-standard technique)**
+4. A implementation of Shinji Umeyama's method described in "Least-Squares Estimation of Transformation Parameters Between Two Point Patterns" **(standard technique)**
 
-You should use method (3) if you do not care about matching scale (rotation + translation only). You should use (1) if you need to match scale. You should use (2) if (1) has convergence issues and you should use (0) if (3) has convergence issues.
+You should use method (4) if you do not care about matching scale (rotation + translation only). You should use (2) if you need to match scale. You should use (3) if (2) has convergence issues and you should use (1) if (4) has convergence issues.
 
-Methods (1) and (2) *ARE NOT* generic ICP implementations. They do not rely on any of the various closed form solutions for finding the 6DOF rigid body transform to bring two point clouds (PC1 and PC2) into correspondence. Instead, I use BFGS to perform gradient descent so that the function to bring PC1 onto PC2 can be as non-linear as you want; i.e. you can parameterize shear, non-linear projection and any other second order effects. 
+Methods (2) and (3) *ARE NOT* generic ICP implementations. They do not rely on any of the various closed form solutions for finding the 6DOF rigid body transform to bring two point clouds (PC1 and PC2) into correspondence. Instead, I use BFGS to perform gradient descent so that the function to bring PC1 onto PC2 can be as non-linear as you want; i.e. you can parameterize shear, non-linear projection and any other second order effects. 
 
 This formulation is particularly useful when dealing with real-world 3D scans (from the Kinect for instance), where you need to be able to compensate for non-linear depth and FOV mismatch between devices. In general, I find that since the correspondence search (using KD trees) accounts for a huge percentage of the run-time, using BFGS is only slightly slower than the direct form quaternion methods, but is at the same time much more flexible.
 
@@ -24,7 +24,7 @@ For those who are curious, I use BFGS to solve the following objective function:
 
 Where, `c` is the pose coefficient vector in `R^m`, `x_{PC1,i}` and `x_{PC2,i}` are the ith PC1 and PC2 correspondence pair in `R^3` and `M_c` is the user defined 4x3 linear transform for the given pose coefficient.
 
-If you need shear and other non-linear components as part of the transformation then it should be easy to modify the code of methods (1) and (2) to do so.
+If you need shear and other non-linear components as part of the transformation then it should be easy to modify the code of methods (2) and (3) to do so.
 
 **Compilation**
 ---------------
