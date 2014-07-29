@@ -187,7 +187,6 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="src\icp\math\icp.cpp" />
-    <ClCompile Include="src\icp\math\icp_eigen_data.cpp" />
     <ClCompile Include="src\icp\math\pso_parallel.cpp" />
     <ClCompile Include="src\icp\math\math_base.cpp" />
     <ClCompile Include="src\icp\math\pso.cpp" />

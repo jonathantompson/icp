@@ -274,9 +274,6 @@
     <ClCompile Include="src\icp\threading\thread.cpp">
       <Filter>Source Files\icp\threading</Filter>
     </ClCompile>
-    <ClCompile Include="src\icp\math\icp_eigen_data.cpp">
-      <Filter>Source Files\icp\math</Filter>
-    </ClCompile>
     <ClCompile Include="src\icp\math\icp.cpp">
       <Filter>Source Files\icp\math</Filter>
     </ClCompile>

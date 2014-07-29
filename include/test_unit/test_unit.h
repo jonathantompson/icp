@@ -234,6 +234,15 @@ int TestRegistry::runAndResetWithArgs(int argc, char* argv[]) {
     incErrors(); \
   }
 
+#define EXPECT_LT(a, b) \
+  if ((a) >= (b)) { \
+    if (errors() == 0) std::cout << "FAILED"; \
+    std::cout << "\n    Line " << __LINE__ \
+              << " Expected lesser " << # a << " and " << # b << ": (" \
+              << (a) << " " << (b) << ")"; \
+    incErrors(); \
+  }
+
 #define EXPECT_FATAL(a) \
   MCP_BASE_has_fatal_message = false; \
   (a); \

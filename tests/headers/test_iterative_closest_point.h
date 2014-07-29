@@ -24,6 +24,11 @@
 #include <stdlib.h>
 #include <GL/freeglut.h>
 
+TEST(ICP, TEST_JACOBIAN) {
+  double max_jacobian_err = 1e-3;
+  EXPECT_LT(icp::math::ICP<double>::testJacobFunc(), max_jacobian_err);
+}
+
 // Some lazy globals
 icp::math::ICP<float>* p_icp;
 icp::clk::Clk clk;
@@ -33,11 +38,13 @@ double time1 = 0;
 const int num_vertices = 1889;
 const std::string bunny_vertices_filename = "bunny_vertices.bin";
 const std::string bunny_normals_filename = "bunny_normals.bin";
-int num_iterations = 0;
+int num_iterations = 29;
 const int max_iterations = 30;
 bool use_normals = false;
 int win_width = 640;
 int win_height = 640;
+bool runtime_error_found = false;
+int method = icp::math::ICPMethod::BFGS_ICP;
 
 void RenderString(float x, float y, void *font, const char* str, 
   icp::math::Float3 const& rgb) {
@@ -64,15 +71,31 @@ void renderScene(void) {
   } else {
     icp::math::Float4x4 M_c;
     p_icp->num_iterations = num_iterations;
-    if (use_normals) {
-      // Use Normals (better, but normals don't always exist)
-      p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c, 
-        &npc1[0], &npc2[0]);
-    } else {
-      // Don't use normals (not as accurate... gets stuck in local minima)
-      p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c);
+    p_icp->icp_method = (icp::math::ICPMethod)method;
+    try {
+      if (use_normals) {
+        // Use Normals (better, but normals don't always exist)
+        p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c, 
+          &npc1[0], &npc2[0]);
+      } else {
+        // Don't use normals (not as accurate... gets stuck in local minima)
+        p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c);
+      }
+    } catch (std::runtime_error& e) {
+      std::cout << "exception caught!: " << e.what() << std::endl;
+      runtime_error_found = true;
+      glutLeaveMainLoop();
+      return;
     }
     pc2_transformed = &p_icp->getPC2Transformed()[0];
+  }
+  float dist = 0;
+  icp::math::Float3 delta;
+  for (uint32_t i = 0; i < pc1.size()/3; i++) {
+    delta.set(pc1[i*3+0] - pc2_transformed[i*3+0],
+      pc1[i*3+1] - pc2_transformed[i*3+1],
+      pc1[i*3+2] - pc2_transformed[i*3+2]);
+    dist += delta.length();
   }
 
   // Render the points
@@ -116,9 +139,13 @@ void renderScene(void) {
     }
   glEnd();
   std::stringstream ss;
-  ss << "num_iterations = " << num_iterations << ", use_normals = ";
-  ss << use_normals;
+  ss << "num_iterations = " << num_iterations << ", use_normals(n) = ";
+  ss << use_normals << ", icp_method(m) = " << method;
   RenderString(10, 10, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
+    icp::math::Float3(1.0f, 1.0f, 1.0f));
+  ss.str("");
+  ss << "position err = " << dist;
+  RenderString(10, 30, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
     icp::math::Float3(1.0f, 1.0f, 1.0f));
 
   glutSwapBuffers();
@@ -152,18 +179,24 @@ void processSpecialKeys(int key, int x, int y) {
 
 void processNormalKeys(unsigned char key, int x, int y) {
   switch (key) {
+  case 27:  // ESCAPE
+    glutLeaveMainLoop();
+    break;
   case 'n':
     use_normals = !use_normals;
+    break;
+  case 'm':
+    method = (method+1) % icp::math::ICPMethod::NUM_METHODS;
     break;
   }
 }
 
 TEST(ICP, SIMPLE_EXAMPLE) {
   p_icp = new icp::math::ICP<float>();
-  p_icp->num_iterations = 100;
+  p_icp->num_iterations = 1;
   p_icp->cos_normal_threshold = acosf((35.0f / 360.0f) * 2.0f * (float)M_PI);
   p_icp->min_distance_sq = 0.0001f;  // Avoid numerical issues
-  p_icp->max_distance_sq = 10.0f;  // Helps avoid local minima
+  p_icp->max_distance_sq = 100.0f;  // Helps avoid local minima
   p_icp->icp_method = icp::math::ICPMethod::BFGS_ICP;
   p_icp->verbose = false;
 
@@ -242,6 +275,8 @@ TEST(ICP, SIMPLE_EXAMPLE) {
 
   time1 = clk.getTime();
   glutMainLoop();
+
+  EXPECT_FALSE(runtime_error_found);
 
   delete p_icp;
 }

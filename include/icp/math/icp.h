@@ -38,22 +38,36 @@
 #define ICP_DEFAULT_VERBOSE true
 #define ICP_DEFAULT_ITERATIONS 30
 #define ICP_DEFAULT_COS_NORMAL_THRESHOLD 0.5f  // 60 deg
-#define ICP_DEFAULT_MIN_DISTANCE_SQ 0.000001f  // 1e-6
-#define ICP_DEFAULT_MAX_DISTANCE_SQ 1000000000.0f  // 1e9
+#define ICP_DEFAULT_MIN_DISTANCE_SQ 1e-6f
+#define ICP_DEFAULT_MAX_DISTANCE_SQ 1e+9f
 #define ICP_DEFAULT_METHOD BFGS_ICP
+#define ICP_BFGS_MAX_ITERATIONS 10
+#define ICP_BFGS_DESCENT_CONDITIONS icp::math::SufficientDescentCondition::ARMIJO
+#define ICP_BFGS_JAC_2NORM_TERM 1e-11
+#define ICP_BFGS_DELTA_F_TERM 1e-11
+#define ICP_BFGS_DELTA_X_2NORM_TERM 1e-11
+#define ICP_BFGS_OBJ_FUNC_SCALE 1e2
+#define ICP_BFGS_C1 1e-4
+#define ICP_BFGS_JAC_STEP_SIZE 1e-5
+#define ICP_PSO_MAX_ITERATIONS 100
+#define ICP_PSO_DELTA_X_TERM 1e-3
 
-#define ICP_BFGS_INCLUDE_SCALE
+#define ICP_OPT_INCLUDE_SCALE
 #define ICP_LINEAR_WEIGHT_FUNCTION  // 1 / (1 + d), otherwise 1 / (1 + d^2)
 namespace icp {
 namespace math {
 
+  template <class T>
   struct ICPEigenData;
   template <class T>
   class BFGS;
+  template <class T>
+  class PSO;
 
   typedef enum {
     SVD_ICP = 0,  // Cannot adjust scale
     BFGS_ICP,     // Can adjust scale independantly in all directions
+    PSO_ICP,      // Can adjust scale independantly in all directions, DEFAULT
     UMEYAMA_ICP,  // Cannot adjust scale
     NUM_METHODS,
   } ICPMethod;
@@ -65,15 +79,15 @@ namespace math {
     ICP_ORIENT_X = 3,
     ICP_ORIENT_Y = 4,
     ICP_ORIENT_Z = 5,
-#ifdef ICP_BFGS_INCLUDE_SCALE
+#ifdef ICP_OPT_INCLUDE_SCALE
     ICP_SCALE_X = 6, 
     ICP_SCALE_Y = 7,
     ICP_SCALE_Z = 8,
-    ICP_BFGS_NUM_COEFFS = 9
+    ICP_OPT_NUM_COEFFS = 9
 #else
-    ICP_BFGS_NUM_COEFFS = 6
+    ICP_OPT_NUM_COEFFS = 6
 #endif
-  } ICPBFGSCoeffs;
+  } ICPOPTCoeffs;
 
   template <typename T>
   class ICP {
@@ -103,16 +117,20 @@ namespace math {
     icp::data_str::Vector<icp::math::Mat4x4<T>>& getTransforms() { return transforms_; }
     icp::data_str::Vector<T>& getPC2Transformed() { return pc2_transformed_; }
     icp::data_str::Vector<T>& getNormPC2Transformed() { return norm_pc2_transformed_; }
+
+    static double testJacobFunc();
     
   private:
-    ICPEigenData* edata_;  // To avoid exposing Eigen to the outside world!
+    ICPEigenData<T>* edata_;  // To avoid exposing Eigen to the outside world!
     BFGS<double>* bfgs_;
+    PSO<double>* pso_;
     // Static variables for running ICP:
     // ICP class is not thread safe because of these!
     static icp::data_str::Vector<double> cur_Q_;
     static icp::data_str::Vector<double> cur_D_;
     static icp::data_str::Vector<double> cur_weights_;
-    static Double4x4 cur_mat_;
+    static double cur_translation_scale_;  // delta Center of mass PC1 and PC2
+    static Mat4x4<double> cur_mat_;
 
     void calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,
       const uint32_t len_pc1, const T* pc2, const T* norm_pc2, 
@@ -120,11 +138,14 @@ namespace math {
     void transformPC(T* pc_dst, T* norm_pc_dst, const Mat4x4<T>& mat, 
       const T* pc_src, const T* norm_pc_src, const uint32_t len_pc);
 
-    static double bfgsObjFunc(const double* coeff);
-    static void bfgsJacobFunc(double* jacob, const double* coeff);
-    static void bfgsUpdateFunc(double* coeff);
-    static void bfgsCoeffsToMat(Double4x4& mat, const double* coeff);
-    static bool bfgs_angle_coeffs_[ICP_BFGS_NUM_COEFFS];
+    static double optObjFunc(const double* coeff);
+    static void optUpdateFunc(double* coeff);
+    static void optCoeffsToMat(Mat4x4<double>& mat, const double* coeff);
+    static bool opt_angle_coeffs_[ICP_OPT_NUM_COEFFS];
+    static void optJacobFunc(double* jacob, const double* coeff);
+    static void optJacobFuncFiniteDiff(double* jacob, const double* coeff);
+    static void optJacobFuncPnt(double* j, const double* c, const double* pc1,
+    const double* pc2, const double weight1, const double scale);
 
     icp::data_str::Vector<icp::math::Mat4x4<T>> transforms_;
     icp::data_str::Vector<int> matches_;

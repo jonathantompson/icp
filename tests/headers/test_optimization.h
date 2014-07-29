@@ -14,7 +14,8 @@
 #include "test_math/optimization_test_functions.h"
 
 TEST(PSO, ExponentialFit) {
-  icp::math::PSO* solver = new icp::math::PSO(NUM_COEFFS_EXPONTIAL_FIT, 17);
+  icp::math::PSO<float>* solver = 
+    new icp::math::PSO<float>(NUM_COEFFS_EXPONTIAL_FIT, 17);
   solver->max_iterations = 10000;
   solver->delta_coeff_termination = 1e-8f;
 
@@ -68,7 +69,7 @@ TEST(PSOParallel, ExponentialFit) {
   delete solver2;
 }
 
-TEST(BFGS, HW7_Q4A) {
+TEST(BFGS, A_FLOAT) {
   icp::math::BFGS<float>* solver_bfgs = new icp::math::BFGS<float>(NUM_COEFFS_HW7_4A);
   solver_bfgs->verbose = false;
   solver_bfgs->max_iterations = 1000;
@@ -93,7 +94,7 @@ TEST(BFGS, HW7_Q4A) {
   delete solver_bfgs;
 }
 
-TEST(BFGS, HW7_Q4B_FLOAT) {
+TEST(BFGS, B_FLOAT) {
   icp::math::BFGS<float>* solver_bfgs2 = new icp::math::BFGS<float>(NUM_COEFFS_HW7_4B);
   solver_bfgs2->verbose = false;
   solver_bfgs2->descent_cond = icp::math::SufficientDescentCondition::ARMIJO;
@@ -119,7 +120,7 @@ TEST(BFGS, HW7_Q4B_FLOAT) {
   delete solver_bfgs2;
 }
 
-TEST(BFGS, HW7_Q4B_DOUBLE) {
+TEST(BFGS, B_DOUBLE) {
   icp::math::BFGS<double>* solver_bfgs2 = new icp::math::BFGS<double>(NUM_COEFFS_HW7_4B);
   solver_bfgs2->verbose = false;
   solver_bfgs2->descent_cond = icp::math::SufficientDescentCondition::STRONG_WOLFE;
@@ -145,7 +146,7 @@ TEST(BFGS, HW7_Q4B_DOUBLE) {
   delete solver_bfgs2;
 }
 
-TEST(LM_FIT, HW3_3_DOUBLE) {
+TEST(LM_FIT, DOUBLE) {
   icp::math::LMFit<double>* lm_fit = 
     new icp::math::LMFit<double>(C_DIM_HW3_3, X_DIM_HW3_3, NUM_PTS_HW3_3);
   lm_fit->verbose = false;
@@ -165,7 +166,7 @@ TEST(LM_FIT, HW3_3_DOUBLE) {
   delete lm_fit;
 }
 
-TEST(LM_FIT, HW3_3_FLOAT) {
+TEST(LM_FIT, FLOAT) {
   icp::math::LMFit<float>* lm_fit = 
     new icp::math::LMFit<float>(C_DIM_HW3_3, X_DIM_HW3_3, NUM_PTS_HW3_3);
   lm_fit->verbose = false;
