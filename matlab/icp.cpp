@@ -131,7 +131,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   }
   if (method < 0 || method >= (int)ICPMethod::NUM_METHODS) {
     mexErrMsgIdAndTxt("MATLAB:icp:invalidInput",
-      "method options are 0 - SVD, 1 - BFGS, 2 - Umeyama!");
+      "method options are 0 - SVD, 1 - BFGS, 2 - PSO, 3 - Umeyama!");
   }
   p_icp->icp_method = (icp::math::ICPMethod)method;
 
