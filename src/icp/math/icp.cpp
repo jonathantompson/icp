@@ -21,9 +21,9 @@ using namespace nanoflann;
 // nanoflann needs a DataSet Adaptor class to calculate distances
 template <typename T>
 struct PointCloud {
-  PointCloud(float* points, const uint32_t npoints) : points(points), 
+  PointCloud(T* points, const uint32_t npoints) : points(points), 
     npoints(npoints) { }
-  float* points;
+  T* points;
   uint32_t npoints;
 
 	// Must return the number of data points
@@ -52,13 +52,13 @@ struct PointCloud {
 namespace icp {
 namespace math {
 
-  icp::data_str::Vector<double> ICP::cur_Q_;
-  icp::data_str::Vector<double> ICP::cur_D_;
-  icp::data_str::Vector<double> ICP::cur_weights_;
-  ICP* ICP::cur_icp_;
-  Double4x4 ICP::cur_mat_;
+  template <typename T> icp::data_str::Vector<double> ICP<T>::cur_Q_;
+  template <typename T> icp::data_str::Vector<double> ICP<T>::cur_D_;
+  template <typename T> icp::data_str::Vector<double> ICP<T>::cur_weights_;
+  template <typename T> Double4x4 ICP<T>::cur_mat_;
 
-  ICP::ICP() {
+  template <typename T>
+  ICP<T>::ICP() {
     bfgs_ = NULL;
     edata_ = NULL;
 
@@ -66,16 +66,17 @@ namespace math {
     bfgs_ = new BFGS<double>(ICP_BFGS_NUM_COEFFS);
     verbose = ICP_DEFAULT_VERBOSE;
     num_iterations = ICP_DEFAULT_ITERATIONS;
-    cos_normal_threshold = ICP_DEFAULT_COS_NORMAL_THRESHOLD;
-    min_distance_sq = ICP_DEFAULT_MIN_DISTANCE_SQ;
-    max_distance_sq = ICP_DEFAULT_MAX_DISTANCE_SQ;
+    cos_normal_threshold = (T)ICP_DEFAULT_COS_NORMAL_THRESHOLD;
+    min_distance_sq = (T)ICP_DEFAULT_MIN_DISTANCE_SQ;
+    max_distance_sq = (T)ICP_DEFAULT_MAX_DISTANCE_SQ;
     icp_method = ICP_DEFAULT_METHOD;
   }
 
-  void ICP::match(Float4x4& ret_pc1_pc2, const float* pc1, 
-    const uint32_t len_pc1, const float* pc2, const uint32_t len_pc2, 
-    const Float4x4& guess_pc1_pc2, const float* norm_pc1, 
-    const float* norm_pc2) {
+  template <typename T>
+  void ICP<T>::match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, 
+    const uint32_t len_pc1, const T* pc2, const uint32_t len_pc2, 
+    const Mat4x4<T>& guess_pc1_pc2, const T* norm_pc1, 
+    const T* norm_pc2) {
 
     // Resize data structures if necessary
     if (transforms_.capacity() < num_iterations) {
@@ -108,8 +109,8 @@ namespace math {
     }
     
     transforms_.pushBack(guess_pc1_pc2);
-    Float4x4 cur_icp_mat;
-    Float4x4 new_composite_mat;
+    Mat4x4<T> cur_icp_mat;
+    Mat4x4<T> new_composite_mat;
     for (uint32_t i = 0; i < num_iterations; i++) {
       if (verbose) {
         std::cout << "ICP iteration " << (i + 1) << " of " << num_iterations;
@@ -125,14 +126,15 @@ namespace math {
           NULL, len_pc2);
       }
 
-      Float4x4::mult(new_composite_mat, cur_icp_mat, transforms_[i]);
+      Mat4x4<T>::mult(new_composite_mat, cur_icp_mat, transforms_[i]);
       transforms_.pushBack(new_composite_mat);
     }
     ret_pc1_pc2.set(transforms_[transforms_.size() - 1]);
   }
 
-  void ICP::calcICPMat(Float4x4& ret, const float* D, const float* norm_D,
-    const uint32_t len_D, const float* Q, const float* norm_Q, 
+  template <typename T>
+  void ICP<T>::calcICPMat(Mat4x4<T>& ret, const T* D, const T* norm_D,
+    const uint32_t len_D, const T* Q, const T* norm_Q, 
     const uint32_t len_Q) {
     // Note D is pc1 in the top level code, and Q is pc2
 
@@ -151,13 +153,13 @@ namespace math {
     const int dim = 3;
     const int nn = 1;  // Num nearest neighbours to search for
 
-    PointCloud<float> pc1(const_cast<float*>(D), len_D);
-    PointCloud<float> pc2(const_cast<float*>(Q), len_Q);
+    PointCloud<T> pc1(const_cast<T*>(D), len_D);
+    PointCloud<T> pc2(const_cast<T*>(Q), len_Q);
 
     // construct a kd-tree index:
 	  typedef KDTreeSingleIndexAdaptor<
-		  L2_Simple_Adaptor<float, PointCloud<float> > ,
-		  PointCloud<float>,
+		  L2_Simple_Adaptor<T, PointCloud<T> > ,
+		  PointCloud<T>,
 		  3 /* dim */
 		  > my_kd_tree_t;
 
@@ -168,25 +170,25 @@ namespace math {
     const size_t num_results = 1;
     for (uint32_t i = 0; i < len_Q; i++) {
       size_t closest_index;
-      float closest_distance_sq;
+      T closest_distance_sq;
       index.knnSearch(&Q[i*3], num_results, &closest_index, 
         &closest_distance_sq);
       matches_[i] = static_cast<int>(closest_index);
-      weights_[i] = static_cast<float>(closest_distance_sq);
+      weights_[i] = static_cast<T>(closest_distance_sq);
     }
 
     /*
     // This is the old FLANN code.  I've since switched to nanoflann to make 
     // the code more portable (nanoflann is just a header library).
-    flann::Matrix<float> dataset(const_cast<float*>(D), len_D, dim);
-    flann::Matrix<float> query(const_cast<float*>(Q), len_Q, dim);
+    flann::Matrix<T> dataset(const_cast<T*>(D), len_D, dim);
+    flann::Matrix<T> query(const_cast<T*>(Q), len_Q, dim);
 
     flann::Matrix<int> indices(&matches_[0], len_Q, nn);
-    flann::Matrix<float> dists(&weights_[0], len_Q, nn);
+    flann::Matrix<T> dists(&weights_[0], len_Q, nn);
 
     // construct an randomized kd-tree index using 4 kd-trees
     // Note: L2 is the squared distances
-    flann::Index<flann::L2<float>> index(dataset, flann::KDTreeIndexParams(4));
+    flann::Index<flann::L2<T>> index(dataset, flann::KDTreeIndexParams(4));
     index.buildIndex();
 
     // do a knn search, using 128 checks
@@ -206,58 +208,59 @@ namespace math {
 #if defined(DEBUG) || defined(_DEBUG)
     // Validate the FLANN min match
     uint32_t i_min = 0;
-    float w_min = weights_[0];
+    T w_min = weights_[0];
     for (uint32_t i = 0; i < len_Q; i++) {
       if (weights_[i] < w_min) {
         w_min = weights_[i];
         i_min = i;
       }
     }
-    Float3 Q_min(&Q[i_min * 3]);
-    Float3 D_min(&D[matches_[i_min] * 3]);
-    Float3 diff;
-    Float3::sub(diff, Q_min, D_min);
-    float weight = Float3::dot(diff, diff);
-    if (fabsf(weight - w_min) > LOOSE_EPSILON) {
+    Vec3<T> Q_min(&Q[i_min * 3]);
+    Vec3<T> D_min(&D[matches_[i_min] * 3]);
+    Vec3<T> diff;
+    Vec3<T>::sub(diff, Q_min, D_min);
+    T weight = Vec3<T>::dot(diff, diff);
+    if (fabs(weight - w_min) > LOOSE_EPSILON) {
       std::cout << "WARNING! manually calculated weight doesn't match Flann's" << std::endl;
       std::cout << weight << " vs " << w_min << std::endl;
     }
     for (uint32_t i = 0; i < len_D; i++) {
-      Float3 D_val(&D[i * 3]);
-      Float3 diff;
-      Float3::sub(diff, Q_min, D_val);
-      weight = Float3::dot(diff, diff);
+      Vec3<T> D_val(&D[i * 3]);
+      Vec3<T> diff;
+      Vec3<T>::sub(diff, Q_min, D_val);
+      weight = Vec3<T>::dot(diff, diff);
       if (weight < w_min) {
         std::cout << "WARNING! manually calculated weight is lower than Flann's" << std::endl;
         std::cout << weight << " vs " << w_min << std::endl;
       }
     }
 #endif
+
     // weights_[i] is the squared distance of the correspondance
-    float min_distance = sqrtf(min_distance_sq);
+    T min_distance = sqrt(min_distance_sq);
     for (uint32_t i = 0; i < weights_.size(); i++) {
       if (weights_[i] >= max_distance_sq) {
         weights_[i] = 0.0f;
       } else {
-        float angle_adjustment = 1.0f;
+        T angle_adjustment = 1.0f;
         if (norm_Q != NULL) {
-          Float3 cur_norm_D(&(norm_D[matches_[i] * 3]));
-          Float3 cur_norm_Q(&(norm_Q[i * 3]));
-          float cos_angle = Float3::dot(cur_norm_D, cur_norm_Q);
-          angle_adjustment = std::max<float>(0, 
+          Vec3<T> cur_norm_D(&(norm_D[matches_[i] * 3]));
+          Vec3<T> cur_norm_Q(&(norm_Q[i * 3]));
+          T cos_angle = Vec3<T>::dot(cur_norm_D, cur_norm_Q);
+          angle_adjustment = std::max<T>(0, 
             (cos_angle - cos_normal_threshold) / (1 - cos_normal_threshold));
         }
 #ifdef ICP_LINEAR_WEIGHT_FUNCTION
-        weights_[i] = std::max<float>(sqrtf(weights_[i]), min_distance);
+        weights_[i] = std::max<T>(sqrt(weights_[i]), min_distance);
 #else
-        weights_[i] = std::max<float>(weights_[i], min_distance_sq);
+        weights_[i] = std::max<T>(weights_[i], min_distance_sq);
 #endif
         weights_[i] = angle_adjustment / (1.0f + weights_[i]);
       }
     }
 
     // Compute total weight and scale the weights
-    float total_weight = 0.0f;
+    T total_weight = 0.0f;
     for (uint32_t i = 0; i < weights_.size(); i++) {
       total_weight += weights_[i];
     }
@@ -272,12 +275,12 @@ namespace math {
         if (verbose) {
           std::cout << "    Computing point cloud means..." << std::endl;
         }
-        Float3 D_mean, Q_mean;
+        Vec3<T> D_mean, Q_mean;
         D_mean.zeros();
         Q_mean.zeros();
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
+          if (weights_[i] > (T)EPSILON) {
             // Always true, but lets be explicit, just in case this changes
             n_pts++;
             Q_mean[0] += Q[i * 3] * weights_[i];
@@ -295,19 +298,19 @@ namespace math {
         if (verbose) {
           std::cout << "    Calculating Cross-Covariance Matrix..." << std::endl;
         }
-        Float3 D_pt, Q_pt;
-        Float3x3 cross_cov, outer_prod;
+        Vec3<T> D_pt, Q_pt;
+        Mat3x3<T> cross_cov, outer_prod;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
+          if (weights_[i] > (T)EPSILON) {
             Q_pt.set(&Q[i * 3]);
             D_pt.set(&D[matches_[i] * 3]);
-            Float3::outerProd(outer_prod, Q_pt, D_pt);
-            Float3x3::scale(outer_prod, weights_[i]);
-            Float3x3::add(cross_cov, cross_cov, outer_prod);
+            Vec3<T>::outerProd(outer_prod, Q_pt, D_pt);
+            Mat3x3<T>::scale(outer_prod, weights_[i]);
+            Mat3x3<T>::add(cross_cov, cross_cov, outer_prod);
           }
         }
-        Float3::outerProd(outer_prod, Q_mean, D_mean);
-        Float3x3::sub(cross_cov, cross_cov, outer_prod);
+        Vec3<T>::outerProd(outer_prod, Q_mean, D_mean);
+        Mat3x3<T>::sub(cross_cov, cross_cov, outer_prod);
 
         // Compute SVD using Eigen
         if (verbose) {
@@ -315,36 +318,36 @@ namespace math {
         }
         for (uint32_t i = 0; i < 3; i++) {
           for (uint32_t j = 0; j < 3; j++) {
-            edata_->cross_cov_mat_(i, j) = cross_cov(i, j);
+            edata_->cross_cov_mat_(i, j) = (double)cross_cov(i, j);
           }
         }
-        Eigen::JacobiSVD<Eigen::Matrix3f> svd(edata_->cross_cov_mat_, 
+        Eigen::JacobiSVD<Eigen::Matrix3d> svd(edata_->cross_cov_mat_, 
           Eigen::ComputeFullU | Eigen::ComputeFullV);
         edata_->rot_e_mat_ = svd.matrixU() * svd.matrixV().transpose();
         if (edata_->rot_e_mat_.determinant() < 0) {
-          Eigen::Matrix3f D = Eigen::Matrix3f::Identity();
+          Eigen::Matrix3d D = Eigen::Matrix3d::Identity();
           D(2,2) = -1;
           edata_->rot_e_mat_ = svd.matrixU() * D * svd.matrixV().transpose();
           cout << "    fixing reflection" << endl;
         }
-        Float4x4 new_rot;
+        Mat4x4<T> new_rot;
         new_rot.identity();
         for (int i = 0; i < 3; i++) {
           for (int j = 0; j < 3; j++) {
-            new_rot(i, j) = edata_->rot_e_mat_(i,j);
+            new_rot(i, j) = (T)edata_->rot_e_mat_(i,j);
           }
         }
 
-        Float4x4 T1;
-        Float4x4::translationMat(T1, -Q_mean[0], -Q_mean[1], -Q_mean[2]);
-        Float4x4 T2;
-        Float4x4::inverse(T2, new_rot);
-        Float4x4 T3;
-        Float4x4::translationMat(T3, D_mean[0], D_mean[1], D_mean[2]);
+        Mat4x4<T> T1;
+        Mat4x4<T>::translationMat(T1, -Q_mean[0], -Q_mean[1], -Q_mean[2]);
+        Mat4x4<T> T2;
+        Mat4x4<T>::inverse(T2, new_rot);
+        Mat4x4<T> T3;
+        Mat4x4<T>::translationMat(T3, D_mean[0], D_mean[1], D_mean[2]);
 
-        Float4x4 temp;
-        Float4x4::mult(temp, T2, T1);
-        Float4x4::mult(ret, T3, temp);
+        Mat4x4<T> temp;
+        Mat4x4<T>::mult(temp, T2, T1);
+        Mat4x4<T>::mult(ret, T3, temp);
       }
       break;
     case UMEYAMA_ICP:
@@ -355,7 +358,7 @@ namespace math {
         // Perform Umeyama method
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
+          if (weights_[i] > (T)EPSILON) {
             n_pts++;
           }
         }
@@ -363,26 +366,26 @@ namespace math {
           throw std::wruntime_error("ERROR: Not enough correspondance points!");
         }
 
-        Eigen::MatrixXf X;  // Point set X is brought onto Y
-        Eigen::MatrixXf Y;
+        Eigen::MatrixXd X;  // Point set X is brought onto Y
+        Eigen::MatrixXd Y;
         X.resize(3, n_pts);  // Each column is a point
         Y.resize(3, n_pts);
 
         // Fill up the Eigen structure
         uint32_t dst_ind = 0;
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
-            X.col(dst_ind) <<  Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2];
+          if (weights_[i] > (T)EPSILON) {
+            X.col(dst_ind) <<  (double)Q[i * 3], (double)Q[i * 3 + 1], (double)Q[i * 3 + 2];
             uint32_t j = matches_[i];
-            Y.col(dst_ind) << D[j * 3], D[j * 3 + 1], D[j * 3 + 2];
+            Y.col(dst_ind) << (double)D[j * 3], (double)D[j * 3 + 1], (double)D[j * 3 + 2];
             dst_ind++;
           }
         }
-        Eigen::MatrixXf mat = Eigen::umeyama(X, Y, true);
+        Eigen::MatrixXd mat = Eigen::umeyama(X, Y, true);
 
         for (int i = 0; i < 4; i++) {
           for (int j = 0; j < 4; j++) {
-            ret(i, j) = mat(i,j);
+            ret(i, j) = (T)mat(i,j);
           }
         }
         break;
@@ -397,7 +400,7 @@ namespace math {
         // double for numerical stability:
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
+          if (weights_[i] > (T)EPSILON) {
             n_pts++;
           }
         }
@@ -420,7 +423,7 @@ namespace math {
         cur_weights_.resize(n_pts);
         uint32_t ind = 0;
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (float)EPSILON) {
+          if (weights_[i] > (T)EPSILON) {
             uint32_t j = matches_[i];
             cur_D_[ind * 3] = (double)D[j * 3];
             cur_D_[ind * 3 + 1] = (double)D[j * 3 + 1];
@@ -432,7 +435,6 @@ namespace math {
             ind++;
           }
         }
-        cur_icp_ = this;
 
         // The starting coeffs should result in the identity matrix
         double start_coeff[ICPBFGSCoeffs::ICP_BFGS_NUM_COEFFS];
@@ -457,7 +459,7 @@ namespace math {
         Double4x4 bfgs_ret;
         bfgsCoeffsToMat(bfgs_ret, end_coeff);
         for (uint32_t i = 0; i < 16; i++) {
-          ret[i] = (float)bfgs_ret[i];
+          ret[i] = (T)bfgs_ret[i];
         }
         if (verbose) {
           std::cout << "    BFGS complete using pos, euler, and scale coeffs:";
@@ -475,16 +477,17 @@ namespace math {
     }
   }
 
-  void ICP::transformPC(float* pc_dst, float* norm_pc_dst, const Float4x4& mat, 
-    const float* pc_src, const float* norm_pc_src, const uint32_t len_pc) {
+  template <typename T>
+  void ICP<T>::transformPC(T* pc_dst, T* norm_pc_dst, const Mat4x4<T>& mat, 
+    const T* pc_src, const T* norm_pc_src, const uint32_t len_pc) {
     if (verbose) {
       std::cout << "    Transforming point cloud..." << std::endl;
     }
-    Float3 pt;
-    Float3 pt_transformed;
+    Vec3<T> pt;
+    Vec3<T> pt_transformed;
     for (uint32_t i = 0; i < len_pc; i++) {
       pt.set(&pc_src[i*3]);
-      Float3::affineTransformPos(pt_transformed, mat, pt);
+      Vec3<T>::affineTransformPos(pt_transformed, mat, pt);
       pc_dst[i * 3] = pt_transformed[0];
       pc_dst[i * 3 + 1] = pt_transformed[1];
       pc_dst[i * 3 + 2] = pt_transformed[2];
@@ -496,14 +499,14 @@ namespace math {
       // so a full normal matrix is not really required.  However, since the
       // current matrix is seeded by an user-supplied transform we cannot 
       // assume that it is even affine, let alone only trans + rotation
-      Float4x4 normal_mat;
-      Float4x4::inverse(normal_mat, mat);
+      Mat4x4<T> normal_mat;
+      Mat4x4<T>::inverse(normal_mat, mat);
       normal_mat.transpose();
-      Float3 norm;
-      Float3 norm_transformed;
+      Vec3<T> norm;
+      Vec3<T> norm_transformed;
       for (uint32_t i = 0; i < len_pc; i++) {
         norm.set(&norm_pc_src[i*3]);
-        Float3::affineTransformVec(norm_transformed, normal_mat, norm);
+        Vec3<T>::affineTransformVec(norm_transformed, normal_mat, norm);
         norm_transformed.normalize();
         norm_pc_dst[i * 3] = norm_transformed[0];
         norm_pc_dst[i * 3 + 1] = norm_transformed[1];
@@ -512,7 +515,8 @@ namespace math {
     }
   }
 
-  bool ICP::bfgs_angle_coeffs_[ICP_BFGS_NUM_COEFFS] = {
+  template <typename T>
+  bool ICP<T>::bfgs_angle_coeffs_[ICP_BFGS_NUM_COEFFS] = {
     false,  // ICP_POSX
     false,  // ICP_POSY
     false,  // ICP_POSZ
@@ -526,7 +530,8 @@ namespace math {
 #endif
   };
 
-  void ICP::bfgsCoeffsToMat(Double4x4& mat, const double* coeff) {
+  template <typename T>
+  void ICP<T>::bfgsCoeffsToMat(Double4x4& mat, const double* coeff) {
     Double4x4::euler2RotMat(mat, coeff[ICP_ORIENT_X], 
       coeff[ICP_ORIENT_Y], coeff[ICP_ORIENT_Z]);
 #ifdef ICP_BFGS_INCLUDE_SCALE
@@ -537,7 +542,8 @@ namespace math {
       coeff[ICP_POS_Y] * 100.0, coeff[ICP_POS_Z] * 100.0);
   }
 
-  double ICP::bfgsObjFunc(const double* coeff) {
+  template <typename T>
+  double ICP<T>::bfgsObjFunc(const double* coeff) {
     bfgsCoeffsToMat(cur_mat_, coeff);
     // Now calculate:
     // 1/N * Sum_i ( weight_i * ||D_i - mat * Q_i||_2 )
@@ -566,7 +572,8 @@ namespace math {
     return sum;
   }
 
-  void ICP::bfgsJacobFunc(double* jacob, const double* coeff) {
+  template <typename T>
+  void ICP<T>::bfgsJacobFunc(double* jacob, const double* coeff) {
     double coeff_tmp[ICP_BFGS_NUM_COEFFS];
     // Estimate using central diff.
     // http://math.fullerton.edu/mathews/n2003/differentiation/NumericalDiffProof.pdf
@@ -582,7 +589,8 @@ namespace math {
     }
   }
 
-  void ICP::bfgsUpdateFunc(double* coeff) {
+  template <typename T>
+  void ICP<T>::bfgsUpdateFunc(double* coeff) {
     WrapTwoPI(coeff[ICP_ORIENT_X]);
     WrapTwoPI(coeff[ICP_ORIENT_Y]);
     WrapTwoPI(coeff[ICP_ORIENT_Z]);
@@ -593,12 +601,15 @@ namespace math {
 #endif
   }
 
-  ICP::~ICP() {
+  template <typename T>
+  ICP<T>::~ICP() {
     SAFE_DELETE(edata_);
     SAFE_DELETE(bfgs_);
   }
 
-
-
 }  // namespace math
 }  // namespace icp
+
+// Explicit template instantiation
+template class icp::math::ICP<float>;
+template class icp::math::ICP<double>;

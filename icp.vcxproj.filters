@@ -179,9 +179,6 @@
     <ClInclude Include="include\icp\threading\callback_instances.h">
       <Filter>Header Files\icp\threading</Filter>
     </ClInclude>
-    <ClInclude Include="include\icp\icp.h">
-      <Filter>Header Files\icp</Filter>
-    </ClInclude>
     <ClInclude Include="include\icp\math\pso.h">
       <Filter>Header Files\icp\math</Filter>
     </ClInclude>
@@ -223,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="include\icp\file_io\file_io.h">
       <Filter>Header Files\icp\file_io</Filter>
+    </ClInclude>
+    <ClInclude Include="include\icp\icp_base.h">
+      <Filter>Header Files\icp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -282,6 +282,9 @@
     </ClCompile>
     <ClCompile Include="src\icp\file_io\file_io.cpp">
       <Filter>Source Files\icp\file_io</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\icp_base.cpp">
+      <Filter>Source Files\icp</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

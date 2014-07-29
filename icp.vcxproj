@@ -134,7 +134,7 @@
     <ClInclude Include="include\icp\debug_util\debug_util.h" />
     <ClInclude Include="include\icp\exceptions\wruntime_error.h" />
     <ClInclude Include="include\icp\file_io\file_io.h" />
-    <ClInclude Include="include\icp\icp.h" />
+    <ClInclude Include="include\icp\icp_base.h" />
     <ClInclude Include="include\icp\math\bfgs.h" />
     <ClInclude Include="include\icp\math\common_optimization.h" />
     <ClInclude Include="include\icp\math\decompose.h" />
@@ -180,6 +180,7 @@
     <ClCompile Include="src\icp\debug_util\debug_util_win32.cpp" />
     <ClCompile Include="src\icp\exceptions\wruntime_error.cpp" />
     <ClCompile Include="src\icp\file_io\file_io.cpp" />
+    <ClCompile Include="src\icp\icp_base.cpp" />
     <ClCompile Include="src\icp\math\common_optimization.cpp" />
     <ClCompile Include="src\icp\math\decompose.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>

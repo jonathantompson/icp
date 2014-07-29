@@ -25,7 +25,7 @@
 #include <GL/freeglut.h>
 
 // Some lazy globals
-icp::math::ICP* p_icp;
+icp::math::ICP<float>* p_icp;
 icp::clk::Clk clk;
 icp::data_str::Vector<float> pc1, npc1;  // Point cloud 1 points
 icp::data_str::Vector<float> pc2, npc2;  // Point cloud 2 points
@@ -34,7 +34,7 @@ const int num_vertices = 1889;
 const std::string bunny_vertices_filename = "bunny_vertices.bin";
 const std::string bunny_normals_filename = "bunny_normals.bin";
 int num_iterations = 0;
-const int max_iterations = 100;
+const int max_iterations = 30;
 bool use_normals = false;
 int win_width = 640;
 int win_height = 640;
@@ -159,11 +159,11 @@ void processNormalKeys(unsigned char key, int x, int y) {
 }
 
 TEST(ICP, SIMPLE_EXAMPLE) {
-  p_icp = new icp::math::ICP();
+  p_icp = new icp::math::ICP<float>();
   p_icp->num_iterations = 100;
   p_icp->cos_normal_threshold = acosf((35.0f / 360.0f) * 2.0f * (float)M_PI);
   p_icp->min_distance_sq = 0.0001f;  // Avoid numerical issues
-  p_icp->max_distance_sq = 1600.0f;  // Helps avoid local minima
+  p_icp->max_distance_sq = 10.0f;  // Helps avoid local minima
   p_icp->icp_method = icp::math::ICPMethod::BFGS_ICP;
   p_icp->verbose = false;
 
@@ -197,6 +197,8 @@ TEST(ICP, SIMPLE_EXAMPLE) {
   M_pc2.leftMultScale(scale[0], scale[1], scale[2]);
   M_pc2.leftMultTranslation(trans[0], trans[1], trans[2]);
 
+  std::cout << "Random transformation matrix for PC2:" << std::endl;
+  M_pc2.printPrecise();
 
   // Create PC2 by transforming PC1 by the random rigid body transform
   icp::math::Float4x4 M_pc2_normal_mat;

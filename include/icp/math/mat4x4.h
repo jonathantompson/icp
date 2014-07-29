@@ -47,6 +47,7 @@ namespace math {
     
     // Getter methods
     void print() const;  // Print to std::cout
+    void printPrecise() const;  // Print to std::cout with 8 bits precision
     T operator[](const int i) const {
       return m[i];
     }
@@ -259,6 +260,23 @@ namespace math {
     printf("| %+.4e  %+.4e  %+.4e  %+.4e |\n", m[1],  m[5],  m[9],  m[13]);
     printf("| %+.4e  %+.4e  %+.4e  %+.4e |\n", m[2],  m[6],  m[10], m[14]);
     printf("| %+.4e  %+.4e  %+.4e  %+.4e |\n", m[3],  m[7],  m[11], m[15]);
+#endif
+  };
+
+  // Getter methods
+  template <class T>
+  void Mat4x4<T>::printPrecise() const {
+#ifdef ROW_MAJOR
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[0],  m[1],  m[2],  m[3]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[4],  m[5],  m[6],  m[7]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[8],  m[9],  m[10], m[11]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[12], m[13], m[14], m[15]);
+#endif
+#ifdef COLUMN_MAJOR
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[0],  m[4],  m[8],  m[12]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[1],  m[5],  m[9],  m[13]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[2],  m[6],  m[10], m[14]);
+    printf("| %+.8e  %+.8e  %+.8e  %+.8e |\n", m[3],  m[7],  m[11], m[15]);
 #endif
   };
   

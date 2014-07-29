@@ -24,8 +24,8 @@ namespace math {
     // http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-    Eigen::MatrixXf cross_cov_mat_;
-    Eigen::MatrixXf rot_e_mat_;
+    Eigen::MatrixXd cross_cov_mat_;
+    Eigen::MatrixXd rot_e_mat_;
   };
 
 };  // namespace math

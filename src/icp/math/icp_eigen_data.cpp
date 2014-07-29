@@ -3,7 +3,7 @@
 #include <iostream>
 #include "icp/math/icp_eigen_data.h"
 
-using Eigen::MatrixXf;
+using Eigen::MatrixXd;
 using std::cout;
 using std::endl;
 using std::runtime_error;

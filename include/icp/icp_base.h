@@ -17,3 +17,4 @@
   #include "icp/string_util/win32_debug_buffer.h"
 #endif
 #include "icp/math/perlin_noise.h"
+#include "icp/math/icp.h"

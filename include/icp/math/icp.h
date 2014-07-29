@@ -38,7 +38,6 @@
 #define ICP_DEFAULT_VERBOSE true
 #define ICP_DEFAULT_ITERATIONS 30
 #define ICP_DEFAULT_COS_NORMAL_THRESHOLD 0.5f  // 60 deg
-#define ICP_NUM_CORES 8
 #define ICP_DEFAULT_MIN_DISTANCE_SQ 0.000001f  // 1e-6
 #define ICP_DEFAULT_MAX_DISTANCE_SQ 1000000000.0f  // 1e9
 #define ICP_DEFAULT_METHOD BFGS_ICP
@@ -53,9 +52,10 @@ namespace math {
   class BFGS;
 
   typedef enum {
-    SVD_ICP,  // Cannot adjust scale
-    BFGS_ICP,  // Can adjust scale independantly in all directions
+    SVD_ICP = 0,  // Cannot adjust scale
+    BFGS_ICP,     // Can adjust scale independantly in all directions
     UMEYAMA_ICP,  // Cannot adjust scale
+    NUM_METHODS,
   } ICPMethod;
 
   typedef enum {
@@ -75,33 +75,34 @@ namespace math {
 #endif
   } ICPBFGSCoeffs;
 
+  template <typename T>
   class ICP {
   public:
     ICP();
     ~ICP();
 
     // pc1 will remain static and ICP will match pc2 ONTO pc1
-    void match(Float4x4& ret_pc1_pc2, const float* pc1, const uint32_t len_pc1, 
-      const float* pc2, const uint32_t len_pc2, const Float4x4& guess_pc1_pc2,
-      const float* norm_pc1 = NULL, const float* norm_pc2 = NULL);
+    void match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, const uint32_t len_pc1, 
+      const T* pc2, const uint32_t len_pc2, const Mat4x4<T>& guess_pc1_pc2,
+      const T* norm_pc1 = NULL, const T* norm_pc2 = NULL);
 
     // Adjustment variables
     bool verbose;
     uint32_t num_iterations;
-    float cos_normal_threshold;
-    float min_distance_sq;  // Avoids correspondances with 0 distance causing 
-                            // numerical issues
-    float max_distance_sq;  // Beyond this distance, correspondance weights are
-                            // forced to zero
+    T cos_normal_threshold;
+    T min_distance_sq;  // Avoids correspondances with 0 distance causing 
+                        // numerical issues
+    T max_distance_sq;  // Beyond this distance, correspondance weights are
+                        // forced to zero
     ICPMethod icp_method; 
 
     // Some functions for getting at correspondance data (after match())
-    float* getLastPC2Transformed() { return &pc2_transformed_[0]; }
+    T* getLastPC2Transformed() { return &pc2_transformed_[0]; }
     int* getLastCorrespondances() { return &matches_[0]; }
-    float* getLastWeights() { return &weights_[0]; }
-    icp::data_str::Vector<icp::math::Float4x4>& getTransforms() { return transforms_; }
-    icp::data_str::Vector<float>& getPC2Transformed() { return pc2_transformed_; }
-    icp::data_str::Vector<float>& getNormPC2Transformed() { return norm_pc2_transformed_; }
+    T* getLastWeights() { return &weights_[0]; }
+    icp::data_str::Vector<icp::math::Mat4x4<T>>& getTransforms() { return transforms_; }
+    icp::data_str::Vector<T>& getPC2Transformed() { return pc2_transformed_; }
+    icp::data_str::Vector<T>& getNormPC2Transformed() { return norm_pc2_transformed_; }
     
   private:
     ICPEigenData* edata_;  // To avoid exposing Eigen to the outside world!
@@ -111,14 +112,13 @@ namespace math {
     static icp::data_str::Vector<double> cur_Q_;
     static icp::data_str::Vector<double> cur_D_;
     static icp::data_str::Vector<double> cur_weights_;
-    static ICP* cur_icp_;
     static Double4x4 cur_mat_;
 
-    void calcICPMat(Float4x4& ret, const float* pc1, const float* norm_pc1,
-      const uint32_t len_pc1, const float* pc2, const float* norm_pc2, 
+    void calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,
+      const uint32_t len_pc1, const T* pc2, const T* norm_pc2, 
       const uint32_t len_pc2);
-    void transformPC(float* pc_dst, float* norm_pc_dst, const Float4x4& mat, 
-      const float* pc_src, const float* norm_pc_src, const uint32_t len_pc);
+    void transformPC(T* pc_dst, T* norm_pc_dst, const Mat4x4<T>& mat, 
+      const T* pc_src, const T* norm_pc_src, const uint32_t len_pc);
 
     static double bfgsObjFunc(const double* coeff);
     static void bfgsJacobFunc(double* jacob, const double* coeff);
@@ -126,11 +126,11 @@ namespace math {
     static void bfgsCoeffsToMat(Double4x4& mat, const double* coeff);
     static bool bfgs_angle_coeffs_[ICP_BFGS_NUM_COEFFS];
 
-    icp::data_str::Vector<icp::math::Float4x4> transforms_;
+    icp::data_str::Vector<icp::math::Mat4x4<T>> transforms_;
     icp::data_str::Vector<int> matches_;
-    icp::data_str::Vector<float> weights_;
-    icp::data_str::Vector<float> pc2_transformed_;
-    icp::data_str::Vector<float> norm_pc2_transformed_;
+    icp::data_str::Vector<T> weights_;
+    icp::data_str::Vector<T> pc2_transformed_;
+    icp::data_str::Vector<T> norm_pc2_transformed_;
   };
 
 };  // namespace math
