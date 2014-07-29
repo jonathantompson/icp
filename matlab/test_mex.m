@@ -38,10 +38,11 @@ M_PC2_icp = icp(icp_data);
 pc2_icp = (M_PC2_icp(1:3,1:3) * pc2' + repmat(M_PC2_icp(1:3,4), 1, size(bunny_data.vert,1)))';
 
 figure;
-scatter3(bunny_data.vert(:,1), bunny_data.vert(:,2), bunny_data.vert(:,3),'r.'); hold on;
-scatter3(pc2(:,1), pc2(:,2), pc2(:,3),'b.');
-scatter3(pc2_icp(:,1), pc2_icp(:,2), pc2_icp(:,3),'g.');
-view(0,90);
+scatter3(bunny_data.vert(:,1), bunny_data.vert(:,3), bunny_data.vert(:,2),'r.'); hold on;
+scatter3(pc2(:,1), pc2(:,3), pc2(:,2),'b.');
+scatter3(pc2_icp(:,1), pc2_icp(:,3), pc2_icp(:,2),'g.');
+% view(0,90);
+set(gcf,'renderer','opengl'); axis vis3d;
 
 mean_err_before = mean(sum((pc2 - bunny_data.vert).^2, 2));
 mean_err_after = mean(sum((pc2_icp - bunny_data.vert).^2, 2));
