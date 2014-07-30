@@ -2,7 +2,7 @@ clearvars; clc; close all;
 load 'bunny_data.mat'
 
 
-M_PC2 = [ +8.38535964e-001  -7.75283277e-002  -8.10404643e-002  +7.44949058e-002 ; ...
+M_PC2 = [ +8.38535964e-001  -7.75283277e-002  -8.10404643e-002  +1.44949058e-001 ; ...
           +7.93413445e-002  +8.78419638e-001  -1.93956606e-002  -4.78396234e-002 ; ...
           +1.03379093e-001  +1.39857326e-002  +1.05629706e+000  -5.56172025e-002 ; ...
           +0.00000000e+000  +0.00000000e+000  +0.00000000e+000  +1.00000000e+000 ];
@@ -38,12 +38,13 @@ M_PC2_icp = icp(icp_data);
 pc2_icp = (M_PC2_icp(1:3,1:3) * pc2' + repmat(M_PC2_icp(1:3,4), 1, size(bunny_data.vert,1)))';
 
 figure;
+set(gcf, 'Position', [100, 100, 1200, 1200]);
 scatter3(bunny_data.vert(:,1), bunny_data.vert(:,3), bunny_data.vert(:,2),'r.'); hold on;
 scatter3(pc2(:,1), pc2(:,3), pc2(:,2),'b.');
 scatter3(pc2_icp(:,1), pc2_icp(:,3), pc2_icp(:,2),'g.');
 % view(0,90);
-set(gcf,'renderer','opengl'); axis vis3d;
-legend({'PC1', 'PC2', 'PC2 after ICP'});
+set(gcf,'renderer','opengl'); axis vis3d; axis equal;
+legend({'PC1', 'PC2', 'PC2 after ICP'}, 'Location', 'NorthEast', 'FontSize', 14);
 
 mean_err_before = mean(sum((pc2 - bunny_data.vert).^2, 2));
 mean_err_after = mean(sum((pc2_icp - bunny_data.vert).^2, 2));

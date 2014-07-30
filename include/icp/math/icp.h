@@ -41,19 +41,20 @@
 #define ICP_DEFAULT_MIN_DISTANCE_SQ 1e-6f
 #define ICP_DEFAULT_MAX_DISTANCE_SQ 1e+9f
 #define ICP_DEFAULT_METHOD BFGS_ICP
-#define ICP_BFGS_MAX_ITERATIONS 10
+#define ICP_BFGS_MAX_ITERATIONS 20
 #define ICP_BFGS_DESCENT_CONDITIONS icp::math::SufficientDescentCondition::ARMIJO
 #define ICP_BFGS_JAC_2NORM_TERM 1e-11
 #define ICP_BFGS_DELTA_F_TERM 1e-11
 #define ICP_BFGS_DELTA_X_2NORM_TERM 1e-11
-#define ICP_BFGS_OBJ_FUNC_SCALE 1e2
+#define ICP_BFGS_OBJ_FUNC_SCALE 1e3
 #define ICP_BFGS_C1 1e-4
 #define ICP_BFGS_JAC_STEP_SIZE 1e-5
 #define ICP_PSO_MAX_ITERATIONS 100
 #define ICP_PSO_DELTA_X_TERM 1e-3
+#define ICP_DEFAULT_FROBENIUS_NORM_TERM 1e-6
 
 #define ICP_OPT_INCLUDE_SCALE
-#define ICP_LINEAR_WEIGHT_FUNCTION  // 1 / (1 + d), otherwise 1 / (1 + d^2)
+// #define ICP_LINEAR_WEIGHT_FUNCTION  // 1 / (1 + d), otherwise 1 / (1 + d^2)
 namespace icp {
 namespace math {
 
@@ -109,6 +110,8 @@ namespace math {
     T max_distance_sq;  // Beyond this distance, correspondance weights are
                         // forced to zero
     ICPMethod icp_method; 
+    T frobenius_norm_termination;  // ICP termination condition.  Terminate 
+                                   // when the affine transform stops changing.
 
     // Some functions for getting at correspondance data (after match())
     T* getLastPC2Transformed() { return &pc2_transformed_[0]; }
@@ -129,7 +132,8 @@ namespace math {
     static icp::data_str::Vector<double> cur_Q_;
     static icp::data_str::Vector<double> cur_D_;
     static icp::data_str::Vector<double> cur_weights_;
-    static double cur_translation_scale_;  // delta Center of mass PC1 and PC2
+    // cur_translation_scale_ is the largest aabbox dimension
+    static double cur_translation_scale_;
     static Mat4x4<double> cur_mat_;
 
     void calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,

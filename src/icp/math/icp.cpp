@@ -74,6 +74,7 @@ namespace math {
     min_distance_sq = (T)ICP_DEFAULT_MIN_DISTANCE_SQ;
     max_distance_sq = (T)ICP_DEFAULT_MAX_DISTANCE_SQ;
     icp_method = ICP_DEFAULT_METHOD;
+    frobenius_norm_termination = (T)ICP_DEFAULT_FROBENIUS_NORM_TERM;
   }
 
   template <typename T>
@@ -115,6 +116,8 @@ namespace math {
     transforms_.pushBack(guess_pc1_pc2);
     Mat4x4<T> cur_icp_mat;
     Mat4x4<T> new_composite_mat;
+    Mat4x4<T> I;
+    I.identity();
     for (uint32_t i = 0; i < num_iterations; i++) {
       if (verbose) {
         std::cout << "ICP iteration " << (i + 1) << " of " << num_iterations;
@@ -132,6 +135,13 @@ namespace math {
 
       Mat4x4<T>::mult(new_composite_mat, cur_icp_mat, transforms_[i]);
       transforms_.pushBack(new_composite_mat);
+
+      Mat4x4<T> delta_M;
+      Mat4x4<T>::sub(delta_M, cur_icp_mat, I);
+      T frobenius_norm = delta_M.frobeniusNorm();  // ||M - I||_F
+      if (frobenius_norm < frobenius_norm_termination) {
+        break;  // Early termination
+      }
     }
     ret_pc1_pc2.set(transforms_[transforms_.size() - 1]);
   }
@@ -167,8 +177,9 @@ namespace math {
 		  3 /* dim */
 		  > my_kd_tree_t;
 
+    // TODO: Leaf size should scale with PC1 size 
     my_kd_tree_t index(3 /*dim*/, pc1, 
-      KDTreeSingleIndexAdaptorParams(10 /* max leaf */) );
+      KDTreeSingleIndexAdaptorParams(10 /* max leaf */) );  
 	  index.buildIndex();
 
     const size_t num_results = 1;
@@ -284,7 +295,7 @@ namespace math {
         Q_mean.zeros();
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             // Always true, but lets be explicit, just in case this changes
             n_pts++;
             Q_mean[0] += Q[i * 3] * weights_[i];
@@ -305,7 +316,7 @@ namespace math {
         Vec3<T> D_pt, Q_pt;
         Mat3x3<T> cross_cov, outer_prod;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             Q_pt.set(&Q[i * 3]);
             D_pt.set(&D[matches_[i] * 3]);
             Vec3<T>::outerProd(outer_prod, Q_pt, D_pt);
@@ -362,12 +373,18 @@ namespace math {
         // Perform Umeyama method
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < weights_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             n_pts++;
           }
         }
         if (n_pts <= 3) {
-          throw std::wruntime_error("ERROR: Not enough correspondance points!");
+          if (verbose) {
+            std::cout << "WARNING: less than 3 correspondance points found. "
+              "Terminating early... (try changing mix/max distance or cos "
+              "normal threshold)";
+          }
+          ret.identity();
+          return;
         }
 
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> X;  // Point set X is brought onto Y
@@ -378,7 +395,7 @@ namespace math {
         // Fill up the Eigen structure
         uint32_t dst_ind = 0;
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             X.col(dst_ind) <<  Q[i * 3], Q[i * 3 + 1], Q[i * 3 + 2];
             uint32_t j = matches_[i];
             Y.col(dst_ind) << D[j * 3], D[j * 3 + 1], D[j * 3 + 2];
@@ -406,13 +423,18 @@ namespace math {
         // double for numerical stability:
         uint32_t n_pts = 0;
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             n_pts++;
           }
         }
         if (n_pts <= 3) {
-          throw std::wruntime_error("ERROR: Not enough correspondance points ("
-            "at least 3 is needed)!");
+          if (verbose) {
+            std::cout << "WARNING: less than 3 correspondance points found. "
+              "Terminating early... (try changing mix/max distance or cos "
+              "normal threshold)";
+          }
+          ret.identity();
+          return;
         }
 
         if (cur_Q_.capacity() < n_pts * 3) {
@@ -428,30 +450,29 @@ namespace math {
         }
         cur_weights_.resize(n_pts);
         uint32_t ind = 0;
-        Vec3<double> com_pc1(0, 0, 0);
-        Vec3<double> com_pc2(0, 0, 0);
+        Vec3<double> max_pc1(0, 0, 0);
+        Vec3<double> min_pc1(0, 0, 0);
         for (uint32_t i = 0; i < matches_.size(); i++) {
-          if (weights_[i] > (T)EPSILON) {
+          if (weights_[i] > std::numeric_limits<T>::epsilon()) {
             uint32_t j = matches_[i];
             cur_D_[ind * 3] = D[j * 3];
             cur_D_[ind * 3 + 1] = D[j * 3 + 1];
             cur_D_[ind * 3 + 2] = D[j * 3 + 2];
-            Vec3<double>::add(com_pc1, com_pc1, Vec3<double>(D[j*3], D[j*3+1], 
+            Vec3<double>::max(max_pc1, max_pc1, Vec3<double>(D[j*3], D[j*3+1], 
+              D[j*3+2]));
+            Vec3<double>::min(min_pc1, min_pc1, Vec3<double>(D[j*3], D[j*3+1], 
               D[j*3+2]));
             cur_Q_[ind * 3] = Q[i * 3];
             cur_Q_[ind * 3 + 1] = Q[i * 3 + 1];
             cur_Q_[ind * 3 + 2] = Q[i * 3 + 2];
-            Vec3<double>::add(com_pc2, com_pc2, Vec3<double>(Q[j*3], Q[j*3+1], 
-              Q[j*3+2]));
             cur_weights_[ind] = weights_[i];
             ind++;
           } 
         }
-        Vec3<double>::scale(com_pc1, 1.0 / (double)ind);
-        Vec3<double>::scale(com_pc2, 1.0 / (double)ind);
-        Vec3<double> delta_com;
-        Vec3<double>::sub(delta_com, com_pc1, com_pc2);
-        cur_translation_scale_ = std::max(delta_com.length(), 1e-4);
+        // cur_translation_scale_ is the largest aabbox dimension
+        cur_translation_scale_ = std::max<double>(max_pc1[0]-min_pc1[0],
+          std::max<double>(max_pc1[1]-min_pc1[1], max_pc1[2]-min_pc1[2]));
+        cur_translation_scale_ = std::max<double>(cur_translation_scale_, 1e-4);
 
         // The starting coeffs should result in the identity matrix
         double start_coeff[ICPOPTCoeffs::ICP_OPT_NUM_COEFFS];
@@ -579,10 +600,10 @@ namespace math {
       coeff[ICP_SCALE_Z]);
 #endif
     // We want the translation coefficients to be between 0 and 1.  We will do
-    // this by using the difference between center of mass between PC1 and PC2
-    mat.leftMultTranslation(coeff[ICP_POS_X] / cur_translation_scale_, 
-      coeff[ICP_POS_Y] / cur_translation_scale_, 
-      coeff[ICP_POS_Z] / cur_translation_scale_);
+    // this by using the maximum PC1 AABBOX dimension as a scale factor
+    mat.leftMultTranslation(coeff[ICP_POS_X] * cur_translation_scale_, 
+      coeff[ICP_POS_Y] * cur_translation_scale_, 
+      coeff[ICP_POS_Z] * cur_translation_scale_);
   }
 
   template <typename T>
@@ -633,15 +654,15 @@ namespace math {
     const double pc2_2 = pc2[1];
     const double pc2_3 = pc2[2];
     // The following is generated automatically by icp_jacobian_calc.m
-    j[0] += (scale*weight1*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0)/cur_translation_scale_;
-    j[1] += (scale*weight1*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0)/cur_translation_scale_;
-    j[2] += (scale*weight1*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0)/cur_translation_scale_;
-    j[3] += scale*weight1*((c8*pc2_2*(M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0+M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0)+c9*pc2_3*(M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-M_PI*c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*2.0)*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0-(c8*pc2_2*(M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0-M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0)+c9*pc2_3*(M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0+M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)+M_PI*c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*2.0)*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
-    j[4] += scale*weight1*((M_PI*c7*pc2_1*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*c9*pc2_3*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*-2.0+(M_PI*c7*pc2_1*cos(M_PI*c5*2.0)*2.0-M_PI*c8*pc2_2*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c9*pc2_3*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0+(M_PI*c7*pc2_1*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0-M_PI*c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
-    j[5] += scale*weight1*((M_PI*c9*pc2_3*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*-2.0+(c8*pc2_2*(M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0+M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-c9*pc2_3*(M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0-M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0))*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+(c8*pc2_2*(M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-c9*pc2_3*(M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0+M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0))*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
-    j[6] += scale*weight1*(pc2_1*sin(M_PI*c5*2.0)*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0+pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0-pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
-    j[7] += scale*weight1*(pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0+pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
-    j[8] += scale*weight1*(pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*(-pc1_1+c1/cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*(-pc1_3+c3/cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0-pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*(-pc1_2+c2/cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
+    j[0] += cur_translation_scale_*scale*weight1*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0;
+    j[1] += cur_translation_scale_*scale*weight1*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0;
+    j[2] += cur_translation_scale_*scale*weight1*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0;
+    j[3] += scale*weight1*((c8*pc2_2*(M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0+M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0)+c9*pc2_3*(M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-M_PI*c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*2.0)*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0-(c8*pc2_2*(M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0-M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0)+c9*pc2_3*(M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0+M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)+M_PI*c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*2.0)*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
+    j[4] += scale*weight1*((M_PI*c7*pc2_1*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0-M_PI*c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0-(M_PI*c7*pc2_1*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*c9*pc2_3*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+(M_PI*c7*pc2_1*cos(M_PI*c5*2.0)*2.0-M_PI*c8*pc2_2*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0+M_PI*c9*pc2_3*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
+    j[5] += scale*weight1*((c8*pc2_2*(M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*2.0+M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-c9*pc2_3*(M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0-M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0)*2.0))*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+(c8*pc2_2*(M_PI*cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*2.0-M_PI*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)-c9*pc2_3*(M_PI*cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)*2.0+M_PI*cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*2.0))*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0-(M_PI*c9*pc2_3*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*2.0+M_PI*c8*pc2_2*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*2.0)*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
+    j[6] += scale*weight1*(pc2_1*sin(M_PI*c5*2.0)*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0+pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0)*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0-pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0)*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0);
+    j[7] += scale*weight1*(pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0+pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
+    j[8] += scale*weight1*(pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*(-pc1_1+c1*cur_translation_scale_+c8*pc2_2*(sin(M_PI*c4*2.0)*sin(M_PI*c6*2.0)-cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)+cos(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))+c7*pc2_1*cos(M_PI*c4*2.0)*cos(M_PI*c5*2.0))*2.0+pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*(-pc1_3+c3*cur_translation_scale_+c8*pc2_2*(cos(M_PI*c4*2.0)*sin(M_PI*c6*2.0)+cos(M_PI*c6*2.0)*sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0))+c9*pc2_3*(cos(M_PI*c4*2.0)*cos(M_PI*c6*2.0)-sin(M_PI*c4*2.0)*sin(M_PI*c5*2.0)*sin(M_PI*c6*2.0))-c7*pc2_1*cos(M_PI*c5*2.0)*sin(M_PI*c4*2.0))*2.0-pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0)*(-pc1_2+c2*cur_translation_scale_+c7*pc2_1*sin(M_PI*c5*2.0)+c8*pc2_2*cos(M_PI*c5*2.0)*cos(M_PI*c6*2.0)-c9*pc2_3*cos(M_PI*c5*2.0)*sin(M_PI*c6*2.0))*2.0);
   }
 
   template <typename T>

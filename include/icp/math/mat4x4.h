@@ -93,6 +93,7 @@ namespace math {
       const T right, const T bottom, const T top);
     void glLookAt(const Vec3<T>& up, const Vec3<T>& forward,
       const Vec3<T>& pos);
+    T frobeniusNorm();
     
     // Static Math operations
     static T det(const Mat4x4& a);
@@ -136,6 +137,7 @@ namespace math {
       const T y_angle, const T z_angle);
     static void rotMat2Euler(T& x_angle, T& y_angle, T& z_angle, 
       const Mat4x4& a);
+    static T frobeniusNorm(const Mat4x4& a);
     
     T m[16];  // Not private --> Avoid some overhead with getter setter methods
     char pad[ALIGNMENT - ((16*sizeof(T)) % ALIGNMENT)];
@@ -1805,6 +1807,20 @@ namespace math {
     z_angle = atan2(-a.m[6],a.m[5]);
     y_angle = asin(a.m[4]);
 #endif
+  }
+
+  template <class T>
+  T Mat4x4<T>::frobeniusNorm(const Mat4x4<T>& a) {
+    T accum = 0;
+    for (uint32_t i = 0; i < 16; i++) {
+      accum += a.m[i] * a.m[i];
+    }
+    return sqrt(accum);
+  }
+
+  template <class T>
+  T Mat4x4<T>::frobeniusNorm() {
+    return Mat4x4<T>::frobeniusNorm(*this);
   }
   
 };  // namespace math

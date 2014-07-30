@@ -15,8 +15,8 @@ c = sym('c', [1,9]);
 
 mat = euler2RotMat(2*PI*c(4), 2*PI*c(5), 2*PI*c(6));
 mat = rightMultScale(mat, c(7), c(8), c(9));
-mat = leftMultTranslation(mat, c(1)/cur_translation_scale, ...
-  c(2)/cur_translation_scale, c(3)/cur_translation_scale);
+mat = leftMultTranslation(mat, c(1)*cur_translation_scale, ...
+  c(2)*cur_translation_scale, c(3)*cur_translation_scale);
 
 delta_x = pc1 - mat * pc2;
 err_per_point = scale * weights .* sum(delta_x.^2,1);  % Dot product 1st dim
