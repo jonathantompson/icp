@@ -62,6 +62,8 @@ namespace math {
     T phi_p;
     T phi_g;
     bool verbose;  // Set to true for detailed output
+
+    inline uint32_t num_coeffs() const { return num_coeffs_; }
   
   private:
     uint32_t num_coeffs_;

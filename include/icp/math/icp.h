@@ -22,12 +22,13 @@
 //  however it will fit to noise, so try and keep the number of correspondances
 //  high.
 //
-//  THIS ICP CLASS IS NOT THREAD SAFE!
+//  THIS ICP CLASS IS MOSTLY THREAD SAFE, but is serializes all match calls
 //
 
 #pragma once
 
 #include <random>
+#include <mutex>
 #include "icp/math/math_types.h"
 #include "icp/data_str/vector.h"
 
@@ -41,6 +42,8 @@
 #define ICP_DEFAULT_MIN_DISTANCE_SQ 1e-6f
 #define ICP_DEFAULT_MAX_DISTANCE_SQ 1e+9f
 #define ICP_DEFAULT_METHOD BFGS_ICP
+#define ICP_DEFAULT_CUR_MATCH_SCALE true
+
 #define ICP_BFGS_MAX_ITERATIONS 20
 #define ICP_BFGS_DESCENT_CONDITIONS icp::math::SufficientDescentCondition::ARMIJO
 #define ICP_BFGS_JAC_2NORM_TERM 1e-11
@@ -53,7 +56,6 @@
 #define ICP_PSO_DELTA_X_TERM 1e-3
 #define ICP_DEFAULT_FROBENIUS_NORM_TERM 1e-6
 
-#define ICP_OPT_INCLUDE_SCALE
 // #define ICP_LINEAR_WEIGHT_FUNCTION  // 1 / (1 + d), otherwise 1 / (1 + d^2)
 namespace icp {
 namespace math {
@@ -80,14 +82,10 @@ namespace math {
     ICP_ORIENT_X = 3,
     ICP_ORIENT_Y = 4,
     ICP_ORIENT_Z = 5,
-#ifdef ICP_OPT_INCLUDE_SCALE
     ICP_SCALE_X = 6, 
     ICP_SCALE_Y = 7,
     ICP_SCALE_Z = 8,
     ICP_OPT_NUM_COEFFS = 9
-#else
-    ICP_OPT_NUM_COEFFS = 6
-#endif
   } ICPOPTCoeffs;
 
   template <typename T>
@@ -112,8 +110,10 @@ namespace math {
     ICPMethod icp_method; 
     T frobenius_norm_termination;  // ICP termination condition.  Terminate 
                                    // when the affine transform stops changing.
+    bool match_scale;  // PSO and BFGS will adjust scale. DEFAULT = TRUE
 
     // Some functions for getting at correspondance data (after match())
+    // NONE of these functions are thread safe.
     T* getLastPC2Transformed() { return &pc2_transformed_[0]; }
     int* getLastCorrespondances() { return &matches_[0]; }
     T* getLastWeights() { return &weights_[0]; }
@@ -124,6 +124,7 @@ namespace math {
     static double testJacobFunc();
     
   private:
+    std::mutex lck_;
     ICPEigenData<T>* edata_;  // To avoid exposing Eigen to the outside world!
     BFGS<double>* bfgs_;
     PSO<double>* pso_;
@@ -134,6 +135,7 @@ namespace math {
     static icp::data_str::Vector<double> cur_weights_;
     // cur_translation_scale_ is the largest aabbox dimension
     static double cur_translation_scale_;
+    static bool cur_match_scale_;
     static Mat4x4<double> cur_mat_;
 
     void calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,

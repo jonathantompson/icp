@@ -78,6 +78,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       "either define npc1 AND npc2 or don't define both");
   }
   double* p_method = getOptionalFieldSafe(prhs[0], 0, "method");
+  double* p_match_scale = getOptionalFieldSafe(prhs[0], 0, "match_scale");
   
   // Check the dimension and sizing of pc1, pc2
   mxArray* arr;
@@ -134,6 +135,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
       "method options are 0 - SVD, 1 - BFGS, 2 - PSO, 3 - Umeyama!");
   }
   p_icp->icp_method = (icp::math::ICPMethod)method;
+  p_icp->match_scale = true;
+  if (p_match_scale != NULL) {
+	p_icp->match_scale = *p_match_scale != 0;
+  }
 
   Mat4x4<double> m_pc2_initial;
   Mat4x4<double> m_pc2_final;

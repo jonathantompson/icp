@@ -31,6 +31,7 @@ icp_data.min_distance_sq = 1e-6;  % Optional parameter
 icp_data.max_distance_sq = 1e+3;  % Optional parameter
 icp_data.cos_normal_threshold = 0.9;  % Optional parameter
 icp_data.method = 1;  % Optional parameter
+icp_data.match_scale = 1;  % Optional parameter
 
 M_PC2_icp = icp(icp_data);
 

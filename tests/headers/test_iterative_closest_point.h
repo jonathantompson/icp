@@ -44,6 +44,7 @@ bool use_normals = true;
 int win_width = 640;
 int win_height = 640;
 bool runtime_error_found = false;
+bool match_scale = true;
 int method = icp::math::ICPMethod::BFGS_ICP;
 
 void RenderString(float x, float y, void *font, const char* str, 
@@ -72,6 +73,7 @@ void renderScene(void) {
     icp::math::Float4x4 M_c;
     p_icp->num_iterations = num_iterations;
     p_icp->icp_method = (icp::math::ICPMethod)method;
+    p_icp->match_scale = match_scale;
     try {
       if (use_normals) {
         // Use Normals (better, but normals don't always exist)
@@ -139,13 +141,18 @@ void renderScene(void) {
     }
   glEnd();
   std::stringstream ss;
-  ss << "num_iterations = " << num_iterations << ", use_normals(n) = ";
-  ss << use_normals << ", icp_method(m) = " << method;
+  ss << "num_iterations = " << num_iterations;
   RenderString(10, 10, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
     icp::math::Float3(1.0f, 1.0f, 1.0f));
   ss.str("");
   ss << "position err = " << dist;
-  RenderString(10, 30, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
+  RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
+    icp::math::Float3(1.0f, 1.0f, 1.0f));
+  ss.str("");
+  ss << "use_normals(n) = ";
+  ss << use_normals << ", method(m) = " << method << ", match_scale(s) = ";
+  ss << match_scale;
+  RenderString(10, 80, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
     icp::math::Float3(1.0f, 1.0f, 1.0f));
 
   glutSwapBuffers();
@@ -187,6 +194,9 @@ void processNormalKeys(unsigned char key, int x, int y) {
     break;
   case 'm':
     method = (method+1) % icp::math::ICPMethod::NUM_METHODS;
+    break;
+  case 's':
+    match_scale = !match_scale;
     break;
   }
 }

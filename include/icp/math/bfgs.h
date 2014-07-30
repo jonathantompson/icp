@@ -77,6 +77,8 @@ namespace math {
     // http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
+    inline uint32_t num_coeffs() const { return num_coeffs_; }
+
   private:
     uint32_t num_coeffs_;
     T alpha_k_;
