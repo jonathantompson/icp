@@ -27,13 +27,13 @@ icp_data.npc1 = bunny_data.norm';  % Optional parameter
 icp_data.pc2 = pc2';
 icp_data.npc2 = npc2';  % Optional parameter
 icp_data.m_pc2_initial = eye(4);
-icp_data.min_distance_sq = 1e-6;  % Optional parameter
+icp_data.min_distance_sq = 1e-11;  % Optional parameter
 icp_data.max_distance_sq = 1e+3;  % Optional parameter
 icp_data.cos_normal_threshold = 0.9;  % Optional parameter
 icp_data.method = 1;  % Optional parameter
 icp_data.match_scale = 1;  % Optional parameter
 
-M_PC2_icp = icp(icp_data);
+[M_PC2_icp, icp_error] = icp(icp_data);
 
 % Affine Transform position
 pc2_icp = (M_PC2_icp(1:3,1:3) * pc2' + repmat(M_PC2_icp(1:3,4), 1, size(bunny_data.vert,1)))';
@@ -52,3 +52,4 @@ mean_err_after = mean(sum((pc2_icp - bunny_data.vert).^2, 2));
 
 display(['Mean error before ICP: ', num2str(mean_err_before)]);
 display(['Mean error after ICP: ', num2str(mean_err_after)]);
+display(['Mean ICP error (reported by ICP): ', num2str(icp_error)]);

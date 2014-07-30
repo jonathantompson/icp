@@ -49,9 +49,9 @@ T* getOptionalFieldSafe(const mxArray* arr, const int index,
 // The gateway function
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   // First check that the inputs and output exist
-  if (nlhs != 1) {
+  if (nlhs != 2 && nlhs != 1) {
     mexErrMsgIdAndTxt("MATLAB:icp:invalidNumOutput",
-      "You must define one (and only one) return value!");
+      "You must define one or two return values!");
   }
   if (nrhs != 1) {
     mexErrMsgIdAndTxt("MATLAB:icp:invalidNumInput",
@@ -144,8 +144,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   Mat4x4<double> m_pc2_final;
   memcpy(&m_pc2_final[0], p_m_pc2_initial, sizeof(m_pc2_final[0]) * 4 * 4);
   
-  p_icp->match(m_pc2_final, p_pc1, num_points_pc1, p_pc2, num_points_pc2, 
-    m_pc2_initial, p_npc1, p_npc2);
+  double pos_error = p_icp->match(m_pc2_final, p_pc1, num_points_pc1, p_pc2, 
+    num_points_pc2, m_pc2_initial, p_npc1, p_npc2);
 
   delete p_icp;
   
@@ -154,5 +154,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
   double* m_pc2_return = mxGetPr(plhs[0]);
   for (uint32_t i = 0; i < 16; i++) {
     m_pc2_return[i] = m_pc2_final[i];
+  }
+  if (nlhs == 2) {
+    plhs[1] = mxCreateDoubleMatrix(1, 1, mxREAL);
+    *mxGetPr(plhs[1]) = pos_error;
   }
 }

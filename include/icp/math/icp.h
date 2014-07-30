@@ -95,7 +95,8 @@ namespace math {
     ~ICP();
 
     // pc1 will remain static and ICP will match pc2 ONTO pc1
-    void match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, const uint32_t len_pc1, 
+    // return is the correspondance fit error.
+    T match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, const uint32_t len_pc1, 
       const T* pc2, const uint32_t len_pc2, const Mat4x4<T>& guess_pc1_pc2,
       const T* norm_pc1 = NULL, const T* norm_pc2 = NULL);
 
@@ -138,7 +139,7 @@ namespace math {
     static bool cur_match_scale_;
     static Mat4x4<double> cur_mat_;
 
-    void calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,
+    T calcICPMat(Mat4x4<T>& ret, const T* pc1, const T* norm_pc1,
       const uint32_t len_pc1, const T* pc2, const T* norm_pc2, 
       const uint32_t len_pc2);
     void transformPC(T* pc_dst, T* norm_pc_dst, const Mat4x4<T>& mat, 

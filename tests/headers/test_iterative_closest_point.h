@@ -67,6 +67,7 @@ void RenderString(float x, float y, void *font, const char* str,
 
 void renderScene(void) {
   float* pc2_transformed;
+  float icp_fit_err = std::numeric_limits<float>::infinity();
   if (num_iterations == 0) {
     pc2_transformed = &pc2[0];
   } else {
@@ -75,13 +76,17 @@ void renderScene(void) {
     p_icp->icp_method = (icp::math::ICPMethod)method;
     p_icp->match_scale = match_scale;
     try {
+      /********************************************************************/
+      /**                            ICP CALL                            **/
+      /********************************************************************/
       if (use_normals) {
         // Use Normals (better, but normals don't always exist)
-        p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c, 
-          &npc1[0], &npc2[0]);
+        icp_fit_err = p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], 
+          (pc2.size()/3), M_c, &npc1[0], &npc2[0]);
       } else {
         // Don't use normals (not as accurate... gets stuck in local minima)
-        p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], (pc2.size()/3), M_c);
+        icp_fit_err = p_icp->match(M_c, &pc1[0], (pc1.size()/3), &pc2[0], 
+          (pc2.size()/3), M_c);
       }
     } catch (std::runtime_error& e) {
       std::cout << "exception caught!: " << e.what() << std::endl;
@@ -99,6 +104,7 @@ void renderScene(void) {
       pc1[i*3+2] - pc2_transformed[i*3+2]);
     dist += delta.length();
   }
+  dist = dist / pc1.size()/3;
 
   // Render the points
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -145,7 +151,7 @@ void renderScene(void) {
   RenderString(10, 10, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
     icp::math::Float3(1.0f, 1.0f, 1.0f));
   ss.str("");
-  ss << "position err = " << dist;
+  ss << "pos err = " << dist << ", icp fit err = " << icp_fit_err;
   RenderString(10, 40, GLUT_BITMAP_TIMES_ROMAN_24, ss.str().c_str(), 
     icp::math::Float3(1.0f, 1.0f, 1.0f));
   ss.str("");
@@ -205,7 +211,6 @@ TEST(ICP, SIMPLE_EXAMPLE) {
   p_icp = new icp::math::ICP<float>();
   p_icp->num_iterations = 1;
   p_icp->cos_normal_threshold = acosf((35.0f / 360.0f) * 2.0f * (float)M_PI);
-  p_icp->min_distance_sq = 0.0001f;  // Avoid numerical issues
   p_icp->max_distance_sq = 100.0f;  // Helps avoid local minima
   p_icp->icp_method = icp::math::ICPMethod::BFGS_ICP;
   p_icp->verbose = false;

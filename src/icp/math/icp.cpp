@@ -80,7 +80,7 @@ namespace math {
   }
 
   template <typename T>
-  void ICP<T>::match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, 
+  T ICP<T>::match(Mat4x4<T>& ret_pc1_pc2, const T* pc1, 
     const uint32_t len_pc1, const T* pc2, const uint32_t len_pc2, 
     const Mat4x4<T>& guess_pc1_pc2, const T* norm_pc1, 
     const T* norm_pc2) {
@@ -121,23 +121,21 @@ namespace math {
     Mat4x4<T> new_composite_mat;
     Mat4x4<T> I;
     I.identity();
+    T fit_error = std::numeric_limits<T>::infinity();
     for (uint32_t i = 0; i < num_iterations; i++) {
       if (verbose) {
         std::cout << "ICP iteration " << (i + 1) << " of " << num_iterations;
         std::cout << std::endl;
       }
-      transformPC(&pc2_transformed_[0], &norm_pc2_transformed_[0], transforms_[i], 
-        pc2, norm_pc2, len_pc2);
+      transformPC(&pc2_transformed_[0], &norm_pc2_transformed_[0], 
+        transforms_[i], pc2, norm_pc2, len_pc2);
       if (norm_pc1 != NULL) {
-        calcICPMat(cur_icp_mat, pc1, norm_pc1, len_pc1, &pc2_transformed_[0], 
-          &norm_pc2_transformed_[0], len_pc2);
+        fit_error = calcICPMat(cur_icp_mat, pc1, norm_pc1, len_pc1, 
+          &pc2_transformed_[0], &norm_pc2_transformed_[0], len_pc2);
       } else {
-        calcICPMat(cur_icp_mat, pc1, NULL, len_pc1, &pc2_transformed_[0], 
-          NULL, len_pc2);
+        fit_error = calcICPMat(cur_icp_mat, pc1, NULL, len_pc1, 
+          &pc2_transformed_[0], NULL, len_pc2);
       }
-
-      Mat4x4<T>::mult(new_composite_mat, cur_icp_mat, transforms_[i]);
-      transforms_.pushBack(new_composite_mat);
 
       Mat4x4<T> delta_M;
       Mat4x4<T>::sub(delta_M, cur_icp_mat, I);
@@ -145,12 +143,20 @@ namespace math {
       if (frobenius_norm < frobenius_norm_termination) {
         break;  // Early termination
       }
+
+      Mat4x4<T>::mult(new_composite_mat, cur_icp_mat, transforms_[i]);
+      transforms_.pushBack(new_composite_mat);
+
     }
     ret_pc1_pc2.set(transforms_[transforms_.size() - 1]);
+    // Finally, transform the points in case someone wants to use them
+    transformPC(&pc2_transformed_[0], &norm_pc2_transformed_[0], 
+        ret_pc1_pc2, pc2, norm_pc2, len_pc2);
+    return fit_error;
   }
 
   template <typename T>
-  void ICP<T>::calcICPMat(Mat4x4<T>& ret, const T* D, const T* norm_D,
+  T ICP<T>::calcICPMat(Mat4x4<T>& ret, const T* D, const T* norm_D,
     const uint32_t len_D, const T* Q, const T* norm_Q, 
     const uint32_t len_Q) {
     // Note D is pc1 in the top level code, and Q is pc2
@@ -186,6 +192,7 @@ namespace math {
 	  index.buildIndex();
 
     const size_t num_results = 1;
+    T fit_error = 0;
     for (uint32_t i = 0; i < len_Q; i++) {
       size_t closest_index;
       T closest_distance_sq;
@@ -193,7 +200,9 @@ namespace math {
         &closest_distance_sq);
       matches_[i] = static_cast<int>(closest_index);
       weights_[i] = static_cast<T>(closest_distance_sq);
+      fit_error += sqrt(closest_distance_sq);
     }
+    fit_error = fit_error / len_Q;
 
     /*
     // This is the old FLANN code.  I've since switched to nanoflann to make 
@@ -387,7 +396,7 @@ namespace math {
               "normal threshold)";
           }
           ret.identity();
-          return;
+          return fit_error;
         }
 
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> X;  // Point set X is brought onto Y
@@ -437,7 +446,7 @@ namespace math {
               "normal threshold)";
           }
           ret.identity();
-          return;
+          return fit_error;
         }
 
         if (cur_Q_.capacity() < n_pts * 3) {
@@ -538,6 +547,7 @@ namespace math {
       throw std::wruntime_error("ICP::match() - ERROR: ICPMethod is not "
         "recognized!");
     }
+    return fit_error;
   }
 
   template <typename T>
