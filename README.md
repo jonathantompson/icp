@@ -5,7 +5,7 @@
 **Overview**
 --------
 
-This library implements a few variants of the Iterative Closest Point algorithm for bringing two point clouds (PC1 and PC2 in to correspondence):
+This library implements a few variants of the Iterative Closest Point algorithm for bringing two point clouds (PC1 and PC2 into correspondence):
 
 1. SVD to find the eigen vectors of the cross-covaraince matrix **(standard technique)**
 2. A custom solution using BFGS **(non-standard technique)**
