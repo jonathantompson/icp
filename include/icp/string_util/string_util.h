@@ -48,8 +48,10 @@ namespace string_util {
 };  // namespace icp
 
 #ifdef _WIN32
+#ifndef ER_CHECK_WIN32
 #define ER_CHECK_WIN32(expr) \
   if ((expr) == 0) { \
     throw std::runtime_error(icp::string_util::Win32ErrorToString(GetLastError()));\
   }
+#endif
 #endif
