@@ -27,7 +27,6 @@
 #include <inttypes.h>
 #endif
 #include "icp/math/math_types.h"  // for uint
-#include "icp/exceptions/wruntime_error.h"
 
 #define MCP_CIRCULAR_BUFFER_EMPTY -1
 
@@ -66,7 +65,7 @@ namespace data_str {
   template <class T>
   CircularBuffer<T>::CircularBuffer(const uint32_t slots) {
     if (slots < 1) {
-      throw std::wruntime_error("CircularBuffer<T>::CircularBuffer: slots < 1");
+      throw std::runtime_error("CircularBuffer<T>::CircularBuffer: slots < 1");
     }
     size_ = slots + 1;
     p_write_ = 0;

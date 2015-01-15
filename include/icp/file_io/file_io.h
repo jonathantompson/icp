@@ -11,7 +11,6 @@
 #include <iostream>
 #include <fstream>
 #include "icp/math/math_types.h"
-#include "icp/exceptions/wruntime_error.h"
 
 namespace icp {
 namespace file_io {
@@ -27,7 +26,7 @@ namespace file_io {
     const std::string& filename) {
     std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
     if (!file.is_open()) {
-      throw std::wruntime_error(std::string("file_io::SaveArrayToFile() - "
+      throw std::runtime_error(std::string("file_io::SaveArrayToFile() - "
         "ERROR: Cannot open output file:") + filename);
     }
     file.write(reinterpret_cast<const char*>(arr), size * sizeof(arr[0]));
@@ -40,14 +39,14 @@ namespace file_io {
     const std::string& filename) {
     std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);
     if (!file.is_open()) {
-      throw std::wruntime_error(std::string("file_io::LoadArrayFromFile() - "
+      throw std::runtime_error(std::string("file_io::LoadArrayFromFile() - "
         "ERROR: Cannot open output file:") + filename);
     }
     std::streampos fsize = file.tellg();
     file.seekg( 0, std::ios::end );
     fsize = file.tellg() - fsize;
     if ((uint32_t)fsize < (uint32_t)sizeof(arr[0]) * size) {
-      throw std::wruntime_error("icp::LoadArrayFromFile() - ERROR: "
+      throw std::runtime_error("icp::LoadArrayFromFile() - ERROR: "
         "File is too small for data request!");
     }
     file.seekg(0);

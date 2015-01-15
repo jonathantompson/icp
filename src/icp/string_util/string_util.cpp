@@ -74,14 +74,14 @@ namespace string_util {
     static_cast<void>(len);
     const size_t wn = std::mbsrtowcs(NULL, &pStr, 0, NULL);
     if (wn == size_t(-1)) {
-      throw std::wruntime_error(L"Error in mbsrtowcs()");
+      throw std::runtime_error("Error in mbsrtowcs()");
     }
     
     std::vector<wchar_t> buf(wn + 1);
     const size_t wn_again = std::mbsrtowcs(buf.data(), &pStr, wn + 1, NULL);
     
     if (wn_again == size_t(-1)) {
-      throw std::wruntime_error(L"Error in mbsrtowcs()");
+      throw std::runtime_error("Error in mbsrtowcs()");
     }
     
     return std::wstring(buf.data(), wn);
@@ -117,14 +117,14 @@ namespace string_util {
     static_cast<void>(len);
     const size_t wn = std::wcsrtombs(NULL, &pStr, 0, NULL);
     if (wn == size_t(-1)) {
-      throw std::wruntime_error(L"Error in wcsrtombs()");
+      throw std::runtime_error("Error in wcsrtombs()");
     }
     
     std::vector<char> buf(wn + 1);
     const size_t wn_again = std::wcsrtombs(buf.data(), &pStr, wn + 1, NULL);
     
     if (wn_again == size_t(-1)) {
-      throw std::wruntime_error(L"Error in wcsrtombs()");
+      throw std::runtime_error("Error in wcsrtombs()");
     }
     
     return std::string(buf.data(), wn);

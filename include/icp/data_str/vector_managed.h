@@ -18,7 +18,6 @@
 #include <stdio.h>  // For printf()
 #include "icp/alignment/data_align.h"
 #include "icp/math/math_types.h"  // for uint
-#include "icp/exceptions/wruntime_error.h"
 
 namespace icp {
 namespace data_str {
@@ -95,7 +94,7 @@ namespace data_str {
 #endif
 
       if (temp == NULL) { 
-        throw std::wruntime_error("VectorManaged<T>::capacity: Malloc Failed.");
+        throw std::runtime_error("VectorManaged<T>::capacity: Malloc Failed.");
       }
 
       // Use placement new to call the constructors for the array
@@ -164,7 +163,7 @@ namespace data_str {
     if (size_ > 0)
       size_ -= 1;  // just reduce the size_ by 1
     else
-      throw std::wruntime_error("VectorManaged<T>::popBack: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::popBack: Out of bounds");
   };
 
   template <typename T>
@@ -176,7 +175,7 @@ namespace data_str {
   T* VectorManaged<T>::at(const uint32_t index ) {
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
 #endif
     return &pvec_[index];
   };
@@ -185,7 +184,7 @@ namespace data_str {
   T VectorManaged<T>::operator[](const uint32_t index) const { 
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("Vector<T>::at: Out of bounds");
+      throw std::runtime_error("Vector<T>::at: Out of bounds");
 #endif
     return pvec_[index]; 
   };
@@ -194,7 +193,7 @@ namespace data_str {
   T& VectorManaged<T>::operator[](const uint32_t index) { 
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("Vector<T>::at: Out of bounds");
+      throw std::runtime_error("Vector<T>::at: Out of bounds");
 #endif
     return pvec_[index]; 
   };
@@ -203,7 +202,7 @@ namespace data_str {
   void VectorManaged<T>::set(const uint32_t index, const T& val ) {
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
 #endif
     pvec_[index] = val;
   };
@@ -212,7 +211,7 @@ namespace data_str {
   void VectorManaged<T>::resize(const uint32_t size) {
 #if defined(_DEBUG) || defined(DEBUG)
     if ( size > capacity_ || size < 0 ) { 
-      throw std::wruntime_error("VectorManaged<T>::resize: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::resize: Out of bounds");
     } else { 
 #endif
       size_ = size; 
@@ -256,7 +255,7 @@ namespace data_str {
   void VectorManaged<T>::deleteAtAndShift(const uint32_t index) {
 #ifdef _DEBUG
     if (index > (size_-1)) {
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
     }
 #endif
     for (uint32_t i = index; i < size_-1; i++) {
@@ -345,7 +344,7 @@ namespace data_str {
 #endif
 
       if (temp == NULL) { 
-        throw std::wruntime_error("VectorManaged<T>::capacity: Malloc Failed.");
+        throw std::runtime_error("VectorManaged<T>::capacity: Malloc Failed.");
       }
 
       // Zero the array elements
@@ -422,7 +421,7 @@ namespace data_str {
       }
       size_ -= 1;
     } else {
-      throw std::wruntime_error("VectorManaged<T>::popBack: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::popBack: Out of bounds");
     }
   };
 
@@ -439,7 +438,7 @@ namespace data_str {
   T** VectorManaged<T*>::at(const uint32_t index ) {
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
 #endif
     return &pvec_[index];
   };
@@ -448,7 +447,7 @@ namespace data_str {
   T* VectorManaged<T*>::operator[](const uint32_t index) const { 
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("Vector<T>::at: Out of bounds");
+      throw std::runtime_error("Vector<T>::at: Out of bounds");
 #endif
     return pvec_[index]; 
   };
@@ -457,7 +456,7 @@ namespace data_str {
   T*& VectorManaged<T*>::operator[](const uint32_t index) { 
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("Vector<T>::at: Out of bounds");
+      throw std::runtime_error("Vector<T>::at: Out of bounds");
 #endif
     return pvec_[index]; 
   };
@@ -466,7 +465,7 @@ namespace data_str {
   void VectorManaged<T*>::set(const uint32_t index, T * const val ) {
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1))
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
 #endif
     pvec_[index] = val;
   };
@@ -475,7 +474,7 @@ namespace data_str {
   void VectorManaged<T*>::deleteAt(const uint32_t index) {
 #if defined(_DEBUG) || defined(DEBUG)
     if (index > (size_-1)) {
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
     }
 #endif
     if (pvec_[index]) {
@@ -488,7 +487,7 @@ namespace data_str {
   void VectorManaged<T*>::resize(const uint32_t size) { 
 #if defined(_DEBUG) || defined(DEBUG)
     if ( size > capacity_) { 
-      throw std::wruntime_error("VectorManaged<T>::resize: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::resize: Out of bounds");
     } else { 
 #endif
       if ( size < size_ ) {
@@ -540,7 +539,7 @@ namespace data_str {
   void VectorManaged<T*>::deleteAtAndShift(const uint32_t index) {
 #ifdef _DEBUG
     if (index > (size_-1)) {
-      throw std::wruntime_error("VectorManaged<T>::at: Out of bounds");
+      throw std::runtime_error("VectorManaged<T>::at: Out of bounds");
     }
 #endif
     if (pvec_[index]) {

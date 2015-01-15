@@ -544,7 +544,7 @@ namespace math {
       }
       break;
     default:
-      throw std::wruntime_error("ICP::match() - ERROR: ICPMethod is not "
+      throw std::runtime_error("ICP::match() - ERROR: ICPMethod is not "
         "recognized!");
     }
     return fit_error;

@@ -11,7 +11,6 @@
 #endif
 #include <string>
 #include <sstream>
-#include "icp/exceptions/wruntime_error.h"
 
 namespace icp {
 namespace string_util {
@@ -51,6 +50,6 @@ namespace string_util {
 #ifdef _WIN32
 #define ER_CHECK_WIN32(expr) \
   if ((expr) == 0) { \
-    throw std::wruntime_error(icp::string_util::Win32ErrorToString(GetLastError()));\
+    throw std::runtime_error(icp::string_util::Win32ErrorToString(GetLastError()));\
   }
 #endif

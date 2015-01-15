@@ -23,9 +23,6 @@
     <Filter Include="Header Files\icp\debug_util">
       <UniqueIdentifier>{a5915174-8b8c-47da-9488-f21b79363ebf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\icp\exceptions">
-      <UniqueIdentifier>{a5c65246-073c-4efb-9d89-908618bd0221}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\icp\math">
       <UniqueIdentifier>{99bf5932-564a-4583-8516-0816befbccde}</UniqueIdentifier>
     </Filter>
@@ -47,9 +44,6 @@
     </Filter>
     <Filter Include="Source Files\icp\debug_util">
       <UniqueIdentifier>{9d860d74-44dd-4881-8e88-19bf330d626d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\icp\exceptions">
-      <UniqueIdentifier>{a31a93b0-d7b5-4b5b-a421-eee0e1a3718d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\icp\math">
       <UniqueIdentifier>{0759f2c4-0a8a-4a12-9d81-cefaa5b07c74}</UniqueIdentifier>
@@ -106,9 +100,6 @@
     </ClInclude>
     <ClInclude Include="include\icp\debug_util\debug_util.h">
       <Filter>Header Files\icp\debug_util</Filter>
-    </ClInclude>
-    <ClInclude Include="include\icp\exceptions\wruntime_error.h">
-      <Filter>Header Files\icp\exceptions</Filter>
     </ClInclude>
     <ClInclude Include="include\icp\math\vec2.h">
       <Filter>Header Files\icp\math</Filter>
@@ -234,9 +225,6 @@
     </ClCompile>
     <ClCompile Include="src\icp\debug_util\debug_util_macosx.cpp">
       <Filter>Source Files\icp\debug_util</Filter>
-    </ClCompile>
-    <ClCompile Include="src\icp\exceptions\wruntime_error.cpp">
-      <Filter>Source Files\icp\exceptions</Filter>
     </ClCompile>
     <ClCompile Include="src\icp\math\math_base.cpp">
       <Filter>Source Files\icp\math</Filter>

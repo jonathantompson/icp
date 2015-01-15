@@ -18,7 +18,6 @@
 #include <stdio.h>  // For printf()
 #include "icp/math/math_types.h"  // for uint
 #include "icp/math/math_base.h"  // for NextPrime
-#include "icp/exceptions/wruntime_error.h"
 
 #ifndef NULL
 #define NULL 0
@@ -83,7 +82,7 @@ namespace data_str {
     count_ = 0;
     size_ = size;
     if (size_ < 1) {
-      throw std::wruntime_error("HashSet<TKey>::HashSet: size < 1");
+      throw std::runtime_error("HashSet<TKey>::HashSet: size < 1");
     }
     table_ = new TKey[size_];
     bucket_full_ = new bool[size_];
@@ -117,7 +116,7 @@ namespace data_str {
         if (!value_inserted) {
           printf("HashSet<TKey>::rehash - Couldn't insert a value!  ");
           printf("This shouldn't happen.  Check hash table logic.\n");
-          throw std::wruntime_error("HashSet<TKey>::rehash: insert failed");
+          throw std::runtime_error("HashSet<TKey>::rehash: insert failed");
         }
       }  // end if (bucket_full_[i])
     }
