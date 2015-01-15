@@ -1,6 +1,9 @@
 /**** Decompose.h - Basic declarations ****/
 #pragma once
 
+namespace icp {
+namespace math {
+
 typedef struct {float x, y, z, w;} DecomposeQuat; /* Quaternion */
 enum QuatPart {X, Y, Z, W};
 typedef DecomposeQuat HVect; /* Homogeneous 3D vector */
@@ -19,3 +22,6 @@ HVect spect_decomp(HMatrix S, HMatrix U);
 DecomposeQuat snuggle(DecomposeQuat q, HVect *k);
 void decomp_affine(HMatrix A, AffineParts *parts);
 void invert_affine(AffineParts *parts, AffineParts *inverse);
+
+};  // namespace math
+};  // namespace icp

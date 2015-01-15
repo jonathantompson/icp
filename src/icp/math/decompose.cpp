@@ -3,6 +3,9 @@
 #include <math.h>
 #include "icp/math/decompose.h"
 
+namespace icp {
+namespace math {
+
 /******* Matrix Preliminaries *******/
 
 /** Fill out 3x3 matrix to 4x4 **/
@@ -474,3 +477,6 @@ void invert_affine(AffineParts *parts, AffineParts *inverse)
     t = Qt_Mul(p, Qt_Mul(t, Qt_Conj(p)));
     inverse->t = (inverse->f>0.0) ? t : Qt_(-t.x, -t.y, -t.z, 0);
 }
+
+};  // namespace math
+};  // namespace icp

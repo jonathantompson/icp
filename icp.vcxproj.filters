@@ -241,9 +241,6 @@
     <ClCompile Include="src\icp\math\math_base.cpp">
       <Filter>Source Files\icp\math</Filter>
     </ClCompile>
-    <ClCompile Include="src\icp\math\decompose.c">
-      <Filter>Source Files\icp\math</Filter>
-    </ClCompile>
     <ClCompile Include="src\icp\string_util\string_util.cpp">
       <Filter>Source Files\icp\string_util</Filter>
     </ClCompile>
@@ -282,6 +279,9 @@
     </ClCompile>
     <ClCompile Include="src\icp\icp_base.cpp">
       <Filter>Source Files\icp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\icp\math\decompose.cpp">
+      <Filter>Source Files\icp\math</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

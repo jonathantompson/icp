@@ -8,10 +8,8 @@
 
 #include <xmmintrin.h>
 
-#include "icp/alignment/data_align.h"
-extern "C" { 
-  #include "icp/math/decompose.h"
-}
+#include "icp/alignment/data_align.h" 
+#include "icp/math/decompose.h"
 
 #ifndef PI_OVER_360
   #define PI_OVER_360 0.0087266462599716478846184538424431

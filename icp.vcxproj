@@ -182,9 +182,11 @@
     <ClCompile Include="src\icp\file_io\file_io.cpp" />
     <ClCompile Include="src\icp\icp_base.cpp" />
     <ClCompile Include="src\icp\math\common_optimization.cpp" />
-    <ClCompile Include="src\icp\math\decompose.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+    <ClCompile Include="src\icp\math\decompose.cpp">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </CompileAs>
     </ClCompile>
     <ClCompile Include="src\icp\math\icp.cpp" />
     <ClCompile Include="src\icp\math\pso_parallel.cpp" />
